@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body{
+            text-align: center;
+        }
+        
+        #form_submit {
+            display: block;
+            margin-top: 200px;
+        }
+    </style>
+</head>
+
+<body>
+        <div id="form_submit">
+        <h3> Enter URL for Container Shipping Companies List JSON File</h3>
+        <form name="myform" id="location">  
+            <input type="text" id="json_filename" value="containerlist.json"><br><br>
+            <input type="submit" value="Submit Query" onClick="geturl()";>
+        </form>
+        </div>
+    
+        <script type="text/javascript">
+           var txt = "";
+            function geturl(){
+               //Takes the url input by the user, loads the corresponding json by calling loadJSON() and then uses the data to create table.
+               if(document.getElementById("json_filename").value == "")
+                   alert("The input field can't be empty. Please enter a filename.");
+               else
+               {
+                    var url =document.getElementById("json_filename").value;     
+                    var jsonResponse = loadJSON(url);
+                    if(jsonResponse != null)
+                    {
+                        var table_keys = Object.keys(jsonResponse.Mainline.Table);
+                        if(table_keys.length < 2)
+                            alert("JSON file contains no Container Shipping Companies- no row data exists.");
+                        else
+                        {
+                            jsonResponse.onload=generateHTML(jsonResponse);
+                            hWin = window.open("", "Assignment4", "height=600,width=1100");
+                            hWin.document.write(txt);  
+                            hWin.document.close();  
+                        }
+                    }
+                }
+            }
+           
+          
+            
+            function generateHTML(jsonResponse){
+               var companiesList=[], companiesNodeList=[];
+               txt="<html><head><title>Top Container Shipping Companies</title></head><body>";
+               txt += "<table border='1'>";
+               //txt += "col width=";
+               
+               
+               //For loop to generate header 
+               txt += "<tr>";
+               for(x in jsonResponse.Mainline.Table.Header.Data) {
+                    txt += "<th>" + jsonResponse.Mainline.Table.Header.Data[x] + "</th>"
+               }
+               txt+= "</tr>";
+               companiesList = jsonResponse.Mainline.Table.Row;
+               companiesNodeList = jsonResponse.Mainline.Table.Row[0];
+    
+               for(i=0;i<companiesList.length;i++) //do for all companies (one per row)
+                {    
+	              companiesNodeList=companiesList[i]; //get properties of a Comapny (an object)
+                  var x = 300;
+                  var y = 150;
+                  txt+="<tr>";      //start a new row of the output table
+                  var keys = Object.keys(companiesNodeList);// returns "company", "ships", etc
+                  for(j=0; j < keys.length;j++) 
+	               {
+                      prop = keys[j];
+                     if(prop=="Hubs")
+                        {
+                            txt+="<td>";
+                            txt+="<ul>";
+                            for(var k=0; k<companiesNodeList[prop].Hub.length; k++)
+                            {
+                                value = jsonResponse.Mainline.Table.Row[i].Hubs.Hub[k];
+                                if(k==0 && value != "")
+                                    {
+                                        txt+="<li style= font-weight:bold;>";
+                                        txt += jsonResponse.Mainline.Table.Row[i].Hubs.Hub[k];
+                                        txt+="</li>";
+                                    }   
+                                else if(value!="")
+                                    {
+                                       txt+="<li>";
+                                       txt += jsonResponse.Mainline.Table.Row[i].Hubs.Hub[k];
+                                       txt+="</li>";  
+                                    }
+                            }
+                            
+                            txt+="</ul>";
+                            txt+="</td>";	               
+                        }
+                       
+                    else if(prop=="HomePage")
+                          {
+                            txt+="<td><a href='"+companiesNodeList[prop]+"'>"+companiesNodeList[prop]+"</a></td>"
+                          }
+                       else if(prop=="Logo" && companiesNodeList[prop]!="")		
+		                  {//handle images separately				         			
+                              txt+="<td><img src='"+ companiesNodeList[prop] +"' width='"+x+"' height='"+y+"'/></td>"; 
+                          }
+                      else 
+                          {						  
+			                 txt+="<td>"+ companiesNodeList[prop] +"</td>";		               
+		                  } 
+                   }	   		              
+                }
+                txt+="</tr>";    
+                txt += "</table></body>";
+            //document.getElementById("demo").innerHTML = txt;  
+            }
+            
+            var jsonDoc; 
+            function loadJSON (url) 
+                {       
+                    var xmlhttp= new XMLHttpRequest(); 
+                    xmlhttp.open("GET",url,false); 
+                    try
+                    {
+                        xmlhttp.send();
+                    }
+                    catch(exc){
+                        alert("The file doesn't exist."+exc);
+                    }
+                    if(xmlhttp.status==200)
+                    {
+                        console.log(xmlhttp.status);
+                        jsonDoc=xmlhttp.responseText;
+                        try {
+                            myobj = JSON.parse(jsonDoc);
+                        }
+                        catch(error)
+                            {
+                                alert("The JSON file is invalid as it produces an error called " +error.name);
+                                return null;
+                            }
+                        return myobj; 
+                    }
+                    else if(xmlhttp.status==404)
+                    {
+                       console.log(xmlhttp.status);
+                        alert("Entered file doesn't exist.");
+                        return null;
+                    }
+                }
+                    
+                      
+    </script>
+</body>
