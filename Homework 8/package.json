@@ -1,0 +1,23 @@
+{
+  "name": "eventsearch-app",
+  "version": "1.0.0",
+  "description": "Simple eventsearch app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "angular-svg-round-progressbar": "^2.0.0",
+    "body-parser": "*",
+    "express": "*",
+    "moment": "^2.22.2",
+    "ngeohash": "^0.6.0",
+    "progressbar.js": "^1.0.1",
+    "sort-json-array": "^0.1.7",
+    "spotify-web-api-node": "^4.0.0",
+    "request": "*"
+  },
+  "author": "Khadija",
+  "license": "ISC"
+}
