@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="en" ng-app='myApp'>
+<head>
+
+  <style type="text/css">
+  .form-group.required .control-label:after {
+  content:"*";
+  color:red;
+ } 
+
+ .btn-outline-secondary{
+    color: #333 !important;
+    background-color: #fff !important;
+    border-color: #ccc !important;
+ }
+ .btn-outline-secondary:hover{
+  background-color: #DDDDDD !important;
+  color: #333 !important;
+  border-color: #ccc !important;
+ }
+
+ .myStarButton{
+  padding: 2px 10px 0px 10px  !important;
+ }
+
+.myStarButton:focus{
+  outline: none !important;
+  box-shadow: none !important;
+}
+ #map {
+        
+        height: 300px;
+       }
+  .center{
+    margin: auto;
+  }
+
+  #eventTable tr:hover{
+    background-color: #ECECEC !important;
+  }
+
+  #eventTable tr a:hover {
+    text-decoration: underline !important;
+  }
+
+   #favTable tr a:hover {
+    text-decoration: underline !important;
+  }
+
+  .material-icons.yellow { color: #ffcc00; }
+
+@media (min-width: 450px) {
+    .mobile {
+          display: none;
+        }
+    .desktop {
+          display: block;
+        }
+    }
+@media (min-width: 300px) and (max-width: 450px) {
+      .mobile {
+                display: block;
+            }
+      .desktop{
+                display: none;
+            }
+        }
+
+  .progress1 {
+  position: absolute !important;
+  font-weight: 100 !important;
+  line-height: 1 !important;
+  color: black;
+}
+
+.progress-wrapper1 {
+  width: 35px !important;
+  height: 35px !important;
+  position: relative !important;
+  margin: 20px !important;
+}
+
+.ptag {
+  width: 425px;
+  height: 30px;
+  border-radius: 5px;
+  background: cornflowerblue;
+  text-align: center;
+  margin: 5px auto;
+  color: white;
+}
+
+.red-bar{
+  
+}
+
+.red-bar.ng-enter {
+  transition:all linear 0.4s;
+  transform: translateX(300px);
+  background-color: white;
+}
+
+.red-bar.ng-enter.ng-enter-active {
+  transform: translateX(0);
+}
+
+.pg-bar{
+
+}
+
+.pg-bar.ng-enter {
+  transition:all linear 0.4s;
+  transform: translateX(-300px);
+  background-color: white;
+}
+
+.pg-bar.ng-enter.ng-enter-active {
+  transform: translateX(0);
+}
+
+.card-bar.ng-enter {
+  transition:all linear 0.3s;
+  transform: translateY(0px);
+}
+
+.card-bar.ng-enter.ng-enter-active {
+  transform: translateY(15px);
+}
+.card-bar.ng-leave {
+  transition:all linear 0.3s;
+  transform: translateY(0px);
+}
+
+.card-bar.ng-leave.ng-leave-active {
+  transform: translateY(-100px);
+}
+
+#align-flex{
+  flex-wrap: nowrap;
+}
+       
+</style>
+  <title>Eventsearch</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.5/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.5/angular-animate.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-svg-round-progressbar/0.4.8/roundProgress.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+  <script type="text/javascript"> 
+  var curr = 35;
+  //var x = 90;
+
+
+   var app = angular.module('myApp',['angular-svg-round-progressbar','ngAnimate']);
+                  app.controller('myCtrl1', function($scope) {
+                       
+ }); 
+  </script>
+
+  <script type="text/javascript">
+
+    var data_event;
+   $(document).ready(function(){
+    $("#keyword").blur(function(){
+      if($("#keyword").val().trim() == '' && !$("#error").length) {
+          //$("#keyword").addClass("warning");
+          $("#keyword").css('border-color', 'red');
+          $("#search").prop("disabled",true);
+          $("#keyword").after("<p id = error style=color:red>Please enter a keyword.<p>");
+        } 
+    });
+    $("#keyword").keyup(function(){
+      if($("#keyword").val().trim() != "")
+      {
+        $("#keyword").css('border-color', '');
+        if(!$('#other').prop('checked') || $("#custom_location").val().trim() != '')
+          if(status=="success")
+          $("#search").prop("disabled",false);//Check if here radiobutton is checked
+        $("#error").hide();
+        call_autocomplete();
+      }
+    });
+    $("#keyword").keyup(function(){
+      if($("#keyword").val().trim() == "")
+      {
+        $("#keyword").css('border-color', 'red');
+        $("#search").prop("disabled",true);
+        if(!$("#error").length)
+          $("#keyword").after("<p id = error style=color:red>Please enter a keyword.<p>");
+      }
+    });
+
+    $("#custom_location").blur(function(){
+      if($("#custom_location").val().trim() == '' && !$("#error_location").length){
+          $("#custom_location").css('border-color', 'red');
+          $("#search").prop("disabled",true);
+          $("#custom_location").after("<p id = error_location style=color:red>Please enter a location.<p>");
+        }
+    });
+    $("#custom_location").keyup(function(){
+      if($("#custom_location").val().trim() != "")
+      {
+        console.log("Value for custom location has been entered");
+        $("#custom_location").css('border-color', '');
+        if($("#keyword").val().trim() != "" && status=="success")
+          $("#search").prop("disabled",false); //Also check if keyword field isn't empty
+        $("#error_location").hide();
+      }
+    });
+     $("#custom_location").keyup(function(){
+      if($("#custom_location").val().trim() == "")
+      {
+        $("#custom_location").css('border-color', 'red');
+        $("#search").prop("disabled",true);
+        if(!$("#error_location").length)
+          $("#custom_location").after("<p id = error_location style=color:red>Please enter a keyword.<p>");
+      }
+    });
+
+   $(".radio-class").click(resetCSS); //To handle when user toggles between two radio buttons
+
+    $(document).ready(function(){
+    $(document).ajaxError(function(event,xhr){
+        alert(JSON.parse(xhr));
+    });
+  });
+
+    function resetCSS(){
+      if($("#current").prop('checked')){
+        $("#custom_location").css('border-color', ''); 
+        $("#error_location").hide(); // Hides it forever need to check!!
+        if($("#keyword").val().trim() != "" && status=="success")
+        $("#search").prop("disabled",false);
+        document.getElementById("custom_location").value = " ";
+      }
+      else{
+        $("#search").prop("disabled",true);
+
+      }
+    }
+
+});
+
+function callErrorHandler(){
+  $("#animateProgressBar").css("display","none");
+  var error_txt = "<div class='alert alert-danger mt-2' role='alert'>Failed to get search results.</div>";
+  document.getElementById('addtable').innerHTML=error_txt;
+}
+  //Calling IP-API through AJAX
+  var lat, lon, status;
+  $.ajax({
+    url : 'http://ip-api.com/json',
+    type : 'GET',
+    dataType:'json', //data type expected of server response
+    success : function(data) { //Function to be run when request succeeds             
+        console.log(data);
+        lat = data.lat;
+        lon = data.lon;
+        status = data.status;
+    },
+    error : function(request,error)
+    {
+        callErrorHandler();
+    }
+});
+
+  window.onload = function(){
+
+  var txt = "<div class='tab-content'>";
+  txt += "<div id='favourites' class = 'tab-pane'>";
+  txt += "<div id='favContainer'></div></div></div>";
+  document.getElementById('addtable').innerHTML = txt;
+  makeFavoritesTable(1);
+}
+
+
+//Sending lat and lon to node for ngeohash
+function get_coordinates(){
+  $.ajax({
+          type: 'GET',
+          url: '/ip-api',
+          data : {latitude : lat, longitude : lon}
+        });
+}
+
+function submitData(){
+    $("#addtable").html("");
+    //console.log("start");
+    $('#animateProgressBar').css("display", "block");
+    var radius = document.getElementById('radius').value;
+    if(radius == "")
+            radius = 10;
+    console.log("Radius : "+radius);
+    if($('#other').prop('checked')){
+    console.log("calling geocoding");
+    call_geocoding();
+    $.ajax({
+          type: 'GET',
+          url: '/ticketmastersearch_custom',
+          data : {
+                  //api_key : "ZA2wHGFGfj8l9RjHFH5BysxNyuPgViW0",
+                  keyword : $("#keyword").val(),
+                  category : $("#category").val(),
+                  radius : radius,
+                  unit : $("#unit").val()
+                },
+          success : function(data){
+            data_event = JSON.parse(data);//Getting Event Search Data here from Server.
+            console.log(data_event);
+            generateHtml(data_event);
+          },
+          error : function(request,error)
+          {
+            callErrorHandler();
+          }
+        });
+  }
+  else{
+    console.log("Sending IP-API response to backend");
+    get_coordinates();
+    $.ajax({
+          type: 'GET',
+          url: '/ticketmastersearch',
+          data : {
+                  //api_key : "ZA2wHGFGfj8l9RjHFH5BysxNyuPgViW0",
+                  keyword : $("#keyword").val(),
+                  category : $("#category").val(),
+                  radius : radius,
+                  unit : $("#unit").val()
+                },
+          success : function(data){
+            data_event = JSON.parse(data);//Getting Event Search Data here from Server.
+            console.log(data_event);
+            generateHtml(data_event);
+          },
+          error : function(request,error)
+          {
+            callErrorHandler();
+          }
+        });
+  }
+   console.log("Ticket master event search parameters sent from client");
+}
+
+function call_autocomplete(){
+  $.ajax({
+    type: 'GET',
+    url: '/autocomplete',
+    data: {keyword : $("#keyword").val(), api_key : "ZA2wHGFGfj8l9RjHFH5BysxNyuPgViW0"},
+    success : function(data){
+      //console.log(JSON.parse(data));
+      data = JSON.parse(data);
+      console.log("autocomplete below");
+      console.log(data);
+      //console.log(data._embedded.attractions[0].name);
+    },
+     error : function(request,error)
+          {
+            callErrorHandler();
+          }
+  });
+}
+
+function call_geocoding(){
+   $.ajax({
+    type: 'GET',
+    url: '/geocoding',
+    data: {location : $("#custom_location").val(), api_key : "AIzaSyBYJYNAGMF5MEC-7txG2Hb3xpJBdSsWu6o"}
+  });
+}
+
+function reset_form(){
+  document.getElementById("myform").reset();
+  document.getElementById("addtable").innerHTML = "";
+  if(document.getElementById('current').checked == true){
+      document.getElementById("current").checked = true;
+      document.getElementById("custom_location").disabled = true;
+    } 
+  var txt = "<div class='tab-content'>";
+  txt += "<div id='favourites' class = 'tab-pane'>";
+  txt += "<div id='favContainer'></div></div></div>";
+  document.getElementById('addtable').innerHTML = txt;
+  makeFavoritesTable(1); 
+}
+
+function makeFavoritesTable(flag){
+                var mapString = localStorage.getItem("map");
+                var map_array = new Map(JSON.parse(mapString));
+                if(flag==0)//For animation
+                {
+                  if(map_array.size != 0) 
+                  {
+                  console.log("here");
+                  var txt = "<button type='button' id='details' class='btn btn-outline-secondary float-right mb-2' disabled onclick=callEventAPI('"+visited_id+"')>Details ></button>";
+                  txt += "<div class='table-responsive'>";
+                  txt += "<table id = 'favTable' ng-if='!redShow' class='table table-hover tab-content red-bar'>";
+                  txt += "<thead><tr>";
+                  txt += "<th>#</th>";
+                  txt += "<th>Date</th>";
+                  txt += "<th>Event</th>";
+                  txt += "<th>Category</th>";
+                  txt += "<th>Venue Info</th>";
+                  txt += "<th>Favorite</th>";
+                  txt+= "</tr></thead>";  
+                  txt+="<tbody>";
+                  var i = 1;
+                  for(var [key,value] of map_array.entries()) //do for all events (one per row)
+                      {
+                        var stringObj = localStorage.getItem(key);
+
+                        favourites = (JSON.parse(stringObj));
+                        favourites.eventname = ((favourites.eventname).replace("~", "'"));
+                        var unique = 'fav'+favourites.id;
+                        txt+="<tr class='"+unique+"'>";
+                        // var count = i+1;
+                        txt+="<th class='text-nowrap'>"+i+"</th>";
+                        i++;
+                        txt+="<td class='text-nowrap'>" +favourites.date+"<br></td>";
+                        //JQuery to initialize tooltips
+                          $(document).ready(function(){
+                            $('[data-toggle="tooltip"]').tooltip(); 
+                          });
+
+                            $(document).ready(function(){
+                              $('[data-toggle="tooltip"]').click(function () {
+                              $('[data-toggle="tooltip"]').tooltip("hide");
+
+                          });
+                        });
+
+                         if((favourites.eventname).length > 35)
+                          {
+                            var eventName = (favourites.eventname).substring(0,35);
+                            var lastIndex = eventName.lastIndexOf(" ");
+                            eventName = eventName.substring(0,lastIndex) + " ...";
+                            txt+="<td class='text-nowrap'><a class='text-primary' data-toggle='tooltip' title='"+favourites.eventname+"' data-placement='bottom' style='cursor:pointer;' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+
+                          }
+                          else//Length is less than 35 characters, display as is.
+                            {
+                              eventName = favourites.eventname;
+                              txt+="<td class='text-nowrap'><a class='text-primary' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+                            }
+                          
+                        txt+="<td>" +favourites.categorygenre+"-"+favourites.categorysegment+"<br></td>";
+                        txt+="<td>" +favourites.venue+"<br></td>";
+                        txt+="<td><button type='button' class='btn btn-outline-secondary' onclick=deleteRow('"+favourites.id+"')><i class='material-icons'>delete</i></button><td>";
+                      txt+="</tr>";
+                      txt+="</tr>";
+                      }
+                  txt+="</tbody></table></div>";
+                  //document.getElementById('favContainer').innerHTML=txt;
+                }
+                  else
+                    {
+                      var txt = "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div>";
+                      document.getElementById('favContainer').innerHTML=txt;
+                    }
+                    $("#favContainer").html("");
+                    var $newDiv1 = $(txt);
+                    $('#favContainer').append($newDiv1);
+
+                    angular.element(document).injector().invoke(function ($compile, $rootScope) {
+                    $rootScope.$apply(function() {
+                        var scope = angular.element($newDiv1).scope();
+                        $compile($newDiv1)(scope);
+                    });
+                });  
+              }
+            else if(flag==1)
+            {
+               if(map_array.size != 0) 
+                  {
+                  console.log("here");
+                  var txt = "<button type='button' id='details' class='btn btn-outline-secondary float-right mb-2' disabled onclick=callEventAPI('"+visited_id+"'>Details ></button>";
+                  txt += "<div class='table-responsive'>";
+                  txt += "<table id = 'favTable' class='table table-hover tab-content'>";
+                 
+                  txt += "<thead><tr>";
+                  txt += "<th>#</th>";
+                  txt += "<th>Date</th>";
+                  txt += "<th>Event</th>";
+                  txt += "<th>Category</th>";
+                  txt += "<th>Venue Info</th>";
+                  txt += "<th>Favorite</th>";
+                  txt+= "</tr></thead>";  
+                  txt+="<tbody>";
+                  var i = 1;
+                  for(var [key,value] of map_array.entries()) //do for all events (one per row)
+                      {
+                        var stringObj = localStorage.getItem(key);
+
+                        favourites = (JSON.parse(stringObj));
+                        favourites.eventname = ((favourites.eventname).replace("~", "'"));
+                        var unique = 'fav'+favourites.id;
+                        txt+="<tr class='"+unique+"'>";
+                        // var count = i+1;
+                        txt+="<th class='text-nowrap'>"+i+"</th>";
+                        i++;
+                        txt+="<td class='text-nowrap'>" +favourites.date+"<br></td>";
+                        //JQuery to initialize tooltips
+                          $(document).ready(function(){
+                            $('[data-toggle="tooltip"]').tooltip(); 
+                          });
+
+                            $(document).ready(function(){
+                              $('[data-toggle="tooltip"]').click(function () {
+                              $('[data-toggle="tooltip"]').tooltip("hide");
+
+                          });
+                        });
+
+                         if((favourites.eventname).length > 35)
+                          {
+                            var eventName = (favourites.eventname).substring(0,35);
+                            var lastIndex = eventName.lastIndexOf(" ");
+                            eventName = eventName.substring(0,lastIndex) + " ...";
+                            txt+="<td><a class='text-primary text-nowrap' data-toggle='tooltip' title='"+favourites.eventname+"' data-placement='bottom' style='cursor:pointer;' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+
+                          }
+                          else//Length is less than 35 characters, display as is.
+                            {
+                              eventName = favourites.eventname;
+                              txt+="<td><a class='text-primary text-nowrap' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+                            }
+                          
+                        txt+="<td class='text-nowrap'>" +favourites.categorygenre+"-"+favourites.categorysegment+"<br></td>";
+                        txt+="<td class='text-nowrap'>" +favourites.venue+"<br></td>";
+                        txt+="<td><button type='button' class='btn btn-outline-secondary' onclick=deleteRow('"+favourites.id+"')><i class='material-icons'>delete</i></button><td>";
+                      txt+="</tr>";
+                      txt+="</tr>";
+                      }
+                  txt+="</tbody></table></div>";
+                  document.getElementById('favContainer').innerHTML=txt;
+                }
+                  else
+                    {
+                      var txt = "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div>";
+                      document.getElementById('favContainer').innerHTML=txt;
+                    } 
+            }
+}
+
+ function changeStarNew(star_id)
+  {
+    console.log('In new method');
+    $('#'+star_id).empty();
+    $('#'+star_id).html('<i class="material-icons">star_border</i>');
+    $('#'+star_id).addClass('testClass');
+    //deleteRow(json_object.id);
+  }
+
+function deleteRow(key){
+    var flag = 1;
+    localStorage.removeItem(key);
+    var string_map = localStorage.getItem("map");
+    localStorage.removeItem("map");
+    var map_array = new Map(JSON.parse(string_map));
+    map_array.delete(key);
+    string_map = JSON.stringify(Array.from(map_array.entries()));
+    localStorage.setItem("map", string_map);
+    makeFavoritesTable(1);
+    changeStarNew(key); //Change star in results table to unchecked while deleting a row
+}
+ //var firstname = 'Khadija';
+ function generateHtml(eventsearch_array){
+           var txt;
+           $('#animateProgressBar').css("display", "none");
+           if(eventsearch_array.page.totalElements == 0)
+               {
+                   //Do something for no data
+                   var error_txt = "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div>";
+                   document.getElementById('addtable').innerHTML=error_txt;
+               }
+            
+            else 
+           {
+                  var eventsList = eventsearch_array._embedded.events;
+                
+                  if($("#favPill").hasClass("active"))
+                    {
+                      $("#resPill").addClass("active");
+                      $("#favPill").removeClass("active");
+                    }
+                txt = "<html><head><title></title></head><body>";
+                txt += "<div class='tab-content'>";
+                txt += "<div id='favourites' class = 'tab-pane'>"; // Setting Favourites tab
+                txt += "<div id='favContainer'>";
+                
+                var mapString = localStorage.getItem("map");
+                var map_array = new Map(JSON.parse(mapString));
+                if(map_array.size != 0)
+                {
+                  console.log("i am here");
+                txt+= "<button type='button' id='details' class='btn btn-outline-secondary float-right' disabled onclick='callEventAPI('"+visited_id+"')'>Details ></button>";
+                txt+="<div class='table-responsive'>"
+                txt += "<table id = 'favTable' class='table table-hover tab-content'>";
+                console.log("here");
+                txt += "<thead><tr>";
+                txt += "<th>#</th>";
+                txt += "<th>Date</th>";
+                txt += "<th>Event</th>";
+                txt += "<th>Category</th>";
+                txt += "<th>Venue Info</th>";
+                txt += "<th>Favorite</th>";
+                txt+= "</tr></thead>";  
+                txt+="<tbody>";
+                var i = 1;
+                for(var [key,value] of map_array.entries()) //do for all events (one per row)
+                    {
+                      var stringObj = localStorage.getItem(key);
+
+                      favourites = (JSON.parse(stringObj));
+                      favourites.eventname = ((favourites.eventname).replace("~", "'"));
+                      var unique = 'fav'+favourites.id;
+                      txt+="<tr class='"+unique+"'>";
+                      // var count = i+1;
+                      txt+="<th class='text-nowrap'>"+i+"</th>";
+                      i++;
+                      txt+="<td class='text-nowrap'>" +favourites.date+"<br></td>";
+
+                        //JQuery to initialize tooltips
+                        $(document).ready(function(){
+                          $('[data-toggle="tooltip"]').tooltip(); 
+                        });
+
+                          $(document).ready(function(){
+                            $('[data-toggle="tooltip"]').click(function () {
+                            $('[data-toggle="tooltip"]').tooltip("hide");
+
+                        });
+                      });
+                     
+                       if((favourites.eventname).length > 35)
+                        {
+                          var eventName = (favourites.eventname).substring(0,35);
+                          var lastIndex = eventName.lastIndexOf(" ");
+                          eventName = eventName.substring(0,lastIndex) + " ...";
+                          txt+="<td class='text-nowrap'><a class='text-primary' data-toggle='tooltip' title='"+favourites.eventname+"' data-placement='bottom' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+
+                        }
+                        else//Length is less than 35 characters, display as is.
+                          {
+                            eventName = favourites.eventname;
+                            txt+="<td class='text-nowrap'><a class='text-primary' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+                          }
+                      
+                      txt+="<td class='text-nowrap'>" +favourites.categorygenre+"-"+favourites.categorysegment+"<br></td>";
+                      txt+="<td class='text-nowrap'>" +favourites.venue+"<br></td>";
+                      txt+="<td><button type='button' class='btn btn-outline-secondary' onclick=deleteRow('"+favourites.id+"')><i class='material-icons'>delete</i></button><td>";
+                    txt+="</tr>";
+                    txt+="</tr>";
+                    }
+                txt+="</tbody></table></div>";
+                txt+= "</div></div>";
+              }
+              else
+                  {
+                    txt += "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div></div></div>";
+                  }
+                txt+= "<div  id='result' class = 'tab-pane active'>";
+                // txt+="<button ng-click='redShow=true'>Click me</button>";
+                txt+= "<button type='button' id='detailsButton' class='btn btn-outline-secondary float-right mb-2' disabled onclick= callEventAPI('"+visited_id+"')>Details ></button>"; // Setting data in Results Tab
+                txt+="<div class='table-responsive'>";
+                txt += "<table id = 'eventTable' class='table table-hover tab-content red-bar'>";
+                txt += "<thead><tr>";
+                txt += "<th>#</th>";
+                txt += "<th>Date</th>";
+                txt += "<th>Event</th>";
+                txt += "<th>Category</th>";
+                txt += "<th>Venue Info</th>";
+                txt += "<th>Favorite</th>";
+                txt+= "</tr></thead>";  
+                txt+="<tbody>";
+                for(var i=0;i<eventsList.length;i++) //do for all events (one per row)
+                    {    
+                        eventsNodeList=eventsList[i]; //get properties of an event (an object)
+                        txt+="<tr class='"+eventsList[i].id+"'>";
+                        var count = i+1;
+                        txt+="<th class='text-nowrap'>"+count+"</th>";
+                        
+                        if(eventsNodeList.hasOwnProperty('dates')){
+                            if(eventsNodeList.dates.hasOwnProperty('start'))
+                                if((eventsNodeList.dates.start.hasOwnProperty('localDate')) && ((eventsNodeList.dates.start.localDate) != 'Undefined' && eventsNodeList.dates.start.localDate != undefined))
+                            txt+="<td align = 'center' class='text-nowrap'>" +eventsNodeList.dates.start.localDate+"</td>";
+                        }
+                       
+                       //Logic to trim the event name and append ...
+                       if((eventsNodeList.name).length > 35)
+                        {
+                          var eventName = (eventsNodeList.name).substring(0,35);
+                          var lastIndex = eventName.lastIndexOf(" ");
+                          eventName = eventName.substring(0,lastIndex) + " ...";
+                          //globalName = eventName;
+                          if((eventsNodeList.hasOwnProperty('name')) && (eventsNodeList.name != undefined)){
+                            txt+="<td><a class='text-primary text-nowrap' data-toggle='tooltip' title='"+eventsNodeList.name+"' data-placement='bottom' id = 'event_to_underline' style='cursor:pointer; ' onclick = callEventAPI('"+eventsNodeList.id+"')>" +eventName+ "</a></td>";}
+                          else
+                            {
+                              txt+="<td>N/A</td>";}
+                            }
+                        else//Length is less than 35 characters, display as is.
+                         {
+                          eventName = eventsNodeList.name;
+                          txt+="<td><a class='text-primary text-nowrap' id = 'event_to_underline' style='cursor:pointer; ' onclick = callEventAPI('"+eventsNodeList.id+"')>" +eventName+ "</a></td>";
+                         }
+                        
+                        //JQuery to initialize tooltips
+                        $(document).ready(function(){
+                          $('[data-toggle="tooltip"]').tooltip(); 
+                        });
+
+                          $(document).ready(function(){
+                            $('[data-toggle="tooltip"]').click(function () {
+                            $('[data-toggle="tooltip"]').tooltip("hide");
+
+                        });
+                      });
+                        
+                       
+
+                        if(eventsNodeList.hasOwnProperty('classifications'))
+                          {
+                            if(eventsNodeList.classifications[0].hasOwnProperty('genre'))
+                            {
+                                if((eventsNodeList.classifications[0].genre.hasOwnProperty('name')) && ((eventsNodeList.classifications[0].genre.name) != 'Undefined' && (eventsNodeList.classifications[0].genre.name) != undefined))
+                                { 
+                                txt+="<td class='text-nowrap'>"+eventsNodeList.classifications[0].genre.name+"-";
+                                var genre = eventsNodeList.classifications[0].genre.name;
+                                }    
+                              else
+                                {
+                                  var genre = "N/A";
+                                  txt+="<td> ";
+                                }}
+                           else
+                            {
+                              var genre = "N/A";
+                              txt+="<td> ";
+                            }
+                        
+                      }
+
+                         if(eventsNodeList.hasOwnProperty('classifications'))
+                          {
+                            if(eventsNodeList.classifications[0].hasOwnProperty('segment'))
+                                if((eventsNodeList.classifications[0].segment.hasOwnProperty('name')) && ((eventsNodeList.classifications[0].segment.name) != 'Undefined' && (eventsNodeList.classifications[0].segment.name) != undefined)) 
+                                txt+=eventsNodeList.classifications[0].segment.name+"</td>";
+                                var segment = eventsNodeList.classifications[0].segment.name;
+                          }
+                        else
+                          {
+                            txt+="N/A</td>";
+                            var segment = "N/A";
+                          }
+
+                        if((eventsNodeList._embedded.venues[0].hasOwnProperty('name')) && (eventsNodeList._embedded.venues[0].name) != 'Undefined' && (eventsNodeList._embedded.venues[0].name) != undefined )
+                        {
+                            txt+="<td class='text-nowrap'>"+eventsNodeList._embedded.venues[0].name+"</td>";
+                        }
+                        else{
+                             txt+="<td>N/A</td>";
+                        }
+                        eventname = ((eventsNodeList.name).replace("'", '~'));
+                        var name = eventsNodeList.id;
+                        var addObject = {
+                        'date': eventsNodeList.dates.start.localDate,
+                        'eventname': eventName,
+                        'categorygenre': genre,
+                        'categorysegment': segment,
+                        'venue':  eventsNodeList._embedded.venues[0].name,
+                        'id': eventsNodeList.id
+                      }
+            //addObject = JSON.stringify(addObject);
+            addObject = (JSON.stringify(addObject));
+                    if(localStorage.getItem(eventsNodeList.id)===null)
+                        txt+="<td class='text-nowrap'><button type='button' id='"+eventsNodeList.id+"' class='btn btn-outline-secondary myStarButton testClass' onclick = changeStar('"+encodeURIComponent(addObject)+"')><i border = solid class='material-icons'>star_border</i></button><td>";
+                      else
+                        txt+="<td class='text-nowrap'><button type='button' id='"+eventsNodeList.id+"' class='btn btn-outline-secondary myStarButton' onclick = changeStar('"+encodeURIComponent(addObject)+"')><i border = solid class='material-icons yellow'>star</i></button><td>";
+                    txt+="</tr>";
+                    }
+                 
+                txt += "</tbody></table></div></div></div></body></html>";
+               document.getElementById("addtable").innerHTML = txt;
+
+             // var $newDiv1 = $(txt);
+             //      $('#addtable').append($newDiv1);
+
+             //      angular.element(document).injector().invoke(function ($compile, $rootScope) {
+             //      $rootScope.$apply(function() {
+             //          var scope = angular.element($newDiv1).scope();
+             //          $compile($newDiv1)(scope);
+             //      });
+             //  });  
+   }}
+
+  var test_id;
+  function changeStar(object) { 
+    //console.log("entering again");
+    string_object = decodeURIComponent(object);
+    json_object =(JSON.parse(string_object));
+    star_id = json_object.id;
+    //console.log(localStorage.getItem(json_object.id));
+    //test_id = star_id;
+    if(localStorage.getItem(star_id)===null){
+      var string_map = localStorage.getItem("map");
+      localStorage.removeItem("map");
+      var map_array = new Map(JSON.parse(string_map));
+      map_array.set(star_id,star_id);
+      string_map = JSON.stringify(Array.from(map_array.entries()));
+      localStorage.setItem("map", string_map);
+      console.log('true');
+      $('#'+star_id).empty();
+      $('#'+star_id).html('<i class="material-icons yellow">star</i>'); 
+      localStorage.setItem(json_object.id, string_object);
+      $('#'+star_id).removeClass('testClass');
+      makeFavoritesTable(1);
+}
+    else{
+      console.log('false');
+      $('#'+star_id).empty();
+      $('#'+star_id).html('<i class="material-icons">star_border</i>');
+      $('#'+star_id).addClass('testClass');
+      deleteRow(json_object.id);
+
+    }
+
+  }
+
+ 
+
+
+/*  $( ".myStarButton" ).click(function() {
+    console.log("clicked");
+  $( this ).toggleClass('<i id="" class="material-icons yellow">star</i>');
+});*/
+
+
+
+   var event_data, venue_data;
+   var visited_id, visited_name;
+   function callEventAPI(id){
+    upcoming_data = undefined;
+     visited_id = id;
+     visited_name = name;
+   if(id.substring(0,3)=="fav") {
+      console.log(id);
+      id = id.substring(3);
+    }
+   
+    console.log("Sending details for events from front end");
+    $.ajax({
+          type: 'GET',
+          url: '/eventdetails',
+          data : {
+                  //api_key : "ZA2wHGFGfj8l9RjHFH5BysxNyuPgViW0",
+                  id: id
+                },
+          success : function(data){
+            event_data = JSON.parse(data);//Getting Event Search Data here from Server.
+            console.log("Event details below:");
+            console.log(event_data);
+            callVenueAPI(event_data._embedded.venues[0].name);
+            makeProgressBar(event_data.name);
+          },
+           error : function(request,error)
+            {
+              makeProgressBar(" ");
+              callErrorHandler();
+            }
+        });
+   }
+
+     function callVenueAPI(name){
+       //$('#animateProgressBar').css("display", "block");
+    console.log("Sending details for venues from front end");
+    $.ajax({
+          type: 'GET',
+          url: '/venuedetails',
+          data : {
+                  //api_key : "ZA2wHGFGfj8l9RjHFH5BysxNyuPgViW0",
+                  keyword: encodeURIComponent(name)
+                },
+          success : function(data){
+            venue_data = JSON.parse(data);//Getting Event Search Data here from Server.
+            console.log("Venue details below:");
+            console.log(venue_data);
+            //callSongkick(venue_data._embedded.venues[0].name);
+            callSongkick(name);
+
+            //generateHtml(data);
+            if(event_data.hasOwnProperty('classifications'))
+            {
+              if(event_data.classifications[0].segment.hasOwnProperty('name') && (event_data.classifications[0].segment.name != 'Undefined') && event_data.classifications[0].segment.name == "Music")
+                {
+                  artist_data = [];
+                  search_data = [];
+                  if(event_data._embedded.hasOwnProperty('attractions'))
+                    {
+                      for(var i = 0; i< event_data._embedded.attractions.length;i++)
+                        {
+                          callSpotifyAPI(event_data._embedded.attractions[i].name); 
+                          callCustomSearch(event_data._embedded.attractions[i].name);
+                        }
+                    }
+                }
+                else
+                {
+              //If genre isn't music, then just call Google Custom Search
+                search_data = [];
+                artist_data = [];
+                if(event_data._embedded.hasOwnProperty('attractions'))
+                  {
+                    for(var i = 0; i< event_data._embedded.attractions.length; i++)
+                      callCustomSearch(event_data._embedded.attractions[i].name);
+                  }
+                else
+                  {
+                    artist_data = search_data = undefined;
+                  }
+              createEventDetails(event_data,venue_data, artist_data);
+            }
+          }
+    },
+           error : function(request,error)
+            {
+              callErrorHandler();
+            }
+        });
+   }
+
+   var artist_data = [];
+   function callSpotifyAPI(name){
+     if(event_data.classifications[0].segment.hasOwnProperty('name') && (event_data.classifications[0].segment.name != 'Undefined') && event_data.classifications[0].segment.name == "Music"){
+    console.log("Sending details for artist info to Spotify from front end");
+    $.ajax({
+          type: 'GET',
+          url: '/spotifydetails',
+          data : {
+                  keyword: name
+                },
+          success : function(data){
+            //console.log(data);
+            artist_data.push(data);//Getting Event Search Data here from Server.
+            console.log("Spotify details below:");
+            console.log(artist_data);
+
+            createEventDetails(event_data,venue_data, artist_data);
+            //generateHtml(data);
+          },
+           error : function(request,error)
+            {
+              callErrorHandler();
+            }
+        });
+    }
+  }
+
+  function callCustomSearch(name){
+    //console.log("Sending details for artist info to Custom Search from front end");
+     $.ajax({
+          type: 'GET',
+          url: '/customsearch',
+          data : {
+                  keyword: name,
+                  cx: '010016458081968255548:82gl1mldecy',
+                  api_key: 'AIzaSyDWtGt8DeZ4cWsx69xaXj93eh16rzOUijw'
+
+                },
+          success : function(data){
+            search_data.push(JSON.parse(data));//Getting Event Search Data here from Server.
+            //console.log("Custom search details below:");
+            //console.log(search_data);
+
+            //Calling it again to ensure search_data gets sent
+            //setTimeout(createEventDetails(event_data,venue_data, artist_data),10000);
+            //createEventDetails(event_data,venue_data, artist_data);
+            //generateHtml(data);
+            createEventDetails(event_data,venue_data, artist_data);
+          },
+           error : function(request,error)
+            {
+              callErrorHandler();
+            }
+        });
+}
+var upcoming_data;
+function callSongkick(venue){
+  //upcoming_data = ' ';
+  console.log("Sending details for upcoming events from front end");
+     $.ajax({
+          type: 'GET',
+          url: '/songkicksearch',
+          data : {
+                  venue: venue,
+                  api_key: 'j1Ti1IQEdhRRaZUm'
+
+                },
+          success : function(data){
+            //search_data.push(JSON.parse(data));//Getting Event Search Data here from Server.
+            console.log("Songkick details below:");
+            //console.log(upcoming_data);
+            data = JSON.parse(data);
+            console.log(data);
+            if(data.resultsPage.results.hasOwnProperty('venue'))
+              {
+                console.log("IN IF");
+               var id = data.resultsPage.results.venue[0].id;
+               callUpcomingEvents(id);
+              }
+
+            else{
+              upcoming_data = undefined;
+              console.log("IN ELSE");
+              console.log(upcoming_data);
+            }
+            //createEventDetails(event_data,venue_data, artist_data);
+            //generateHtml(data);
+          },
+           error : function(request,error)
+            {
+              callErrorHandler();
+            }
+        });
+}
+
+function callUpcomingEvents(id){
+  console.log("In upcoming events");
+  console.log(id);
+
+ $.ajax({
+          type: 'GET',
+          url: '/songkickupcoming',
+          data : {
+                  id: id,
+                  api_key: 'j1Ti1IQEdhRRaZUm'
+
+                },
+          success : function(data){
+            //search_data.push(JSON.parse(data));//Getting Event Search Data here from Server.
+            console.log("Songkick upcoming details below:");
+            upcoming_data = JSON.parse(data);
+            console.log(upcoming_data);
+
+            //Calling it again to ensure search_data gets sent
+            createEventDetails(event_data,venue_data, artist_data);
+         
+          },
+           error : function(request,error)
+            {
+              callErrorHandler();
+            }
+        });
+}
+
+
+function makeProgressBar(name){
+  //console.log(visited_name);""
+  //console.log(name);
+  var txt = "<div ng-if = '!progressShow' ng-controller='myCtrl1' class = 'pg-bar'>";
+  $('.tooltip').tooltip("hide");
+  document.getElementById('addtable').innerHTML = '';
+  txt +="<h4 align='center'>"+name+"</h4><br><br>";
+  txt += "<button type='button' class='btn btn-outline-secondary float-left' onclick= 'highlightText()'> < List </button>";
+  if(localStorage.getItem(visited_id)===null)
+                        txt+="<td><button type='button' class='btn btn-outline-secondary myStarButton testClass float-right'><i border = solid class='material-icons'>star_border</i></button><td>";
+  else
+                        txt+="<td><button type='button' class='btn btn-outline-secondary myStarButton float-right'><i border = solid class='material-icons yellow'>star</i></button><td>";
+
+  txt+="<img class = 'float-right mr-1' src='http://csci571.com/hw/hw8/Images/Twitter.png' width=36px height=36px disabled><br><br>";
+  txt +="<ul id='align-flex' class='nav nav-tabs float-content-end' role='tablist'><li class='nav-item'><a class='nav-link active' href='#event' data-toggle='tab' role='tab'>Event</a></li><li class='nav-item'><a class='nav-link' href='#artist' data-toggle='tab' role='tab'>Artist/Team(s)</a></li><li class='nav-item'><a class='nav-link' href='#venue' data-toggle='tab' role='tab'>Venue</a></li><li class='nav-item'><a class='nav-link' href='#upcoming' data-toggle='tab' role='tab'>Upcoming Events</a></li></ul>";
+  txt+="<div class='tab-content'>";
+  txt+="<div id='event' class='container tab-pane active'></div>";
+  txt+="<div id='artist' class='container tab-pane'></div>";
+  txt+="<div id='venue' class='container tab-pane'></div>";
+  txt+="<div id='upcoming' class='container tab-pane'></div><br><br>";
+  txt+="<div id = 'progress-bar' class='progress'><div class='progress-bar progress-bar-striped progress-bar-animated' role='progressbar' aria-valuenow='50' aria-valuemin='0' aria-valuemax='100' style='width:50%'></div></div>";
+  $('#progress-bar').css("display", "block");
+   // Setting data in Results Tab
+  txt+="</div></div>"
+  //document.getElementById('addtable').innerHTML = txt;
+  var $newDiv1 = $(txt);
+  $('#addtable').append($newDiv1);
+
+  angular.element(document).injector().invoke(function ($compile, $rootScope) {
+  $rootScope.$apply(function() {
+      var scope = angular.element($newDiv1).scope();
+      $compile($newDiv1)(scope);
+  });
+}); 
+  
+}
+
+function callSort1(){
+  var upcoming_data1 = upcoming_data;
+  //console.log(upcoming_data1);
+  var value = document.getElementById('ordering').value;
+  var sortOrder = document.getElementById('ascending').value;
+  //console.log(value);
+  //console.log(sortOrder);
+  if(value!='default')
+    $("#ascending").prop("disabled",false);
+  else
+    $("#ascending").prop("disabled",true);
+  if(value == 'artist' && sortOrder == 'asc')
+  {
+  (upcoming_data1.resultsPage.results.event).sort(function(a, b)
+    { // sort object by Employee Name
+      var nameA=a.performance[0].artist.displayName.toLowerCase(), nameB=b.performance[0].artist.displayName.toLowerCase();
+        if (nameA < nameB) //sort string ascending
+          return -1;
+        if (nameA > nameB)
+          return 1;
+        return 0; //default return value (no sorting)
+    })
+  console.log("sorted: artist");
+  console.log(upcoming_data1.resultsPage.results.event);
+  makeTable(upcoming_data1);
+  }
+  if(value == 'artist' && sortOrder == 'des')
+  {
+  (upcoming_data1.resultsPage.results.event).sort(function(a, b)
+    { // sort object by Employee Name
+      var nameA=a.performance[0].artist.displayName.toLowerCase(), nameB=b.performance[0].artist.displayName.toLowerCase();
+        if (nameA > nameB) //sort string ascending
+          return -1;
+        if (nameA < nameB)
+          return 1;
+        return 0; //default return value (no sorting)
+    })
+  console.log("sorted: artist");
+  console.log(upcoming_data1.resultsPage.results.event);
+  makeTable(upcoming_data1);
+  }
+
+  if(value=='event' && sortOrder == 'asc'){
+    (upcoming_data1.resultsPage.results.event).sort(function(a, b)
+    { // sort object by Employee Name
+      var nameA=a.displayName.toLowerCase(), nameB=b.displayName.toLowerCase();
+      if (nameA < nameB) //sort string ascending
+        return -1;
+      if (nameA > nameB)
+        return 1;
+      return 0; //default return value (no sorting)
+    })
+  console.log("sorted: event");
+  console.log(upcoming_data1);
+  makeTable(upcoming_data1);
+  }
+
+    if(value=='event' && sortOrder == 'des'){
+    (upcoming_data1.resultsPage.results.event).sort(function(a, b)
+    { // sort object by Employee Name
+      var nameA=a.displayName.toLowerCase();
+      var nameB=b.displayName.toLowerCase();
+      if (nameA > nameB) //sort string ascending
+        return -1;
+      if (nameA < nameB)
+        return 1;
+      return 0; //default return value (no sorting)
+    })
+  console.log("sorted: event");
+  console.log(upcoming_data1);
+  makeTable(upcoming_data1);
+  }
+
+  if(value=='type' && sortOrder == 'asc')
+  {
+    (upcoming_data1.resultsPage.results.event).sort(function(a, b)
+      { // sort object by Employee Name
+    var nameA=a.type.toLowerCase(), nameB=b.type.toLowerCase();
+      if (nameA < nameB) //sort string ascending
+        return -1;
+      if (nameA > nameB)
+        return 1;
+      return 0; //default return value (no sorting)
+      })
+    console.log("sorted: type");
+    console.log(upcoming_data1.resultsPage.results.event);
+    makeTable(upcoming_data1);
+  }
+
+   if(value=='type' && sortOrder == 'des')
+  {
+    (upcoming_data1.resultsPage.results.event).sort(function(a, b)
+      { // sort object by Employee Name
+    var nameA=a.type.toLowerCase(), nameB=b.type.toLowerCase();
+      if (nameA > nameB) //sort string ascending
+        return -1;
+      if (nameA < nameB)
+        return 1;
+      return 0; //default return value (no sorting)
+      })
+    console.log("sorted: type");
+    console.log(upcoming_data1.resultsPage.results.event);
+    makeTable(upcoming_data1);
+  }
+
+
+  if(value=='time' && sortOrder == 'asc')
+  {
+    upcoming_data1.resultsPage.results.event.sort(function(a, b)
+    { // sort object by age field
+   (upcoming_data1.resultsPage.results.event).sort(function(a, b){ // sort object by retirement date
+    var dateA=new Date(a.start.date), dateB=new Date(b.start.date);
+    return dateA-dateB; //sort by date ascending
+})
+    })
+    console.log("sorted: time");
+    console.log(upcoming_data1.resultsPage.results.event);
+    makeTable(upcoming_data1);
+  }
+
+   if(value=='time' && sortOrder == 'des')
+  {
+    upcoming_data1.resultsPage.results.event.sort(function(a, b)
+    { // sort object by age field
+   (upcoming_data1.resultsPage.results.event).sort(function(a, b){ // sort object by retirement date
+    var dateA= new Date(a.start.date), dateB=new Date(b.start.date)
+    return dateB-dateA; //sort by date ascending
+})
+    })
+    console.log("sorted: time");
+    console.log(upcoming_data1.resultsPage.results.event);
+    makeTable(upcoming_data1);
+  }
+
+  if(value=='default')
+  {
+    //Print original array
+    upcoming_data1.resultsPage.results.event.sort(function(a, b)
+    { // sort object by age field
+   (upcoming_data1.resultsPage.results.event).sort(function(a, b){ // sort object by retirement date
+    var dateA=new Date(a.start.date), dateB=new Date(b.start.date)
+    return dateA-dateB; //sort by date ascending
+    })
+  })
+    console.log("sorted: default");
+    console.log(upcoming_data.resultsPage.results.event);
+    makeTable(upcoming_data1);
+  }
+}
+
+function makeTable(upcoming_details){
+  var txt;
+  //console.log(document.getElementById("toggleButton").value == 'more');
+  txt ="<div id='upcoming' class='container tab-pane active'><br>";
+  //console.log(status);
+  if(document.getElementById("toggleButton").value == 'more')
+  {
+  for(var i =0; i<5; i++)
+            {
+            //console.log(i);
+            //console.log(upcoming_data.resultsPage.results.event[i] !=undefined);
+            if(upcoming_details.resultsPage.results.event[i] != undefined)
+            {
+            //txt+="<p>Hello</p>";
+            txt+="<div class='card mt-2'>";
+            txt+="<div class='card-body'>";
+            if(upcoming_details.resultsPage.results.event[i].hasOwnProperty('uri') && upcoming_details.resultsPage.results.event[i].uri != undefined)
+              txt+="<a href='"+upcoming_details.resultsPage.results.event[i].uri+"' class='card-link' target='_blank'>"+upcoming_details.resultsPage.results.event[i].displayName+"</a>";
+            if(upcoming_details.resultsPage.results.event[i].hasOwnProperty('performance') && upcoming_details.resultsPage.results.event[i].performance[0] != undefined)
+              if(upcoming_details.resultsPage.results.event[i].performance[0].hasOwnProperty('artist') && upcoming_details.resultsPage.results.event[i].performance[0].artist != undefined)
+                if(upcoming_details.resultsPage.results.event[i].performance[0].artist.hasOwnProperty('displayName') && upcoming_details.resultsPage.results.event[i].performance[0].artist.displayName != undefined)
+                  txt+="<p style='margin:0px; padding: 0px;'><span style='color: #FD7E14;'>Artist: "+upcoming_details.resultsPage.results.event[i].performance[0].artist.displayName+" "+"</span><span style='color: #bdbdbd;'>"+moment(upcoming_details.resultsPage.results.event[i].start.date).format("MMM DD, YYYY")+" ";
+            
+            if(upcoming_details.resultsPage.results.event[i].start.hasOwnProperty('time') && upcoming_details.resultsPage.results.event[i].start.time!= null)
+              txt+=upcoming_details.resultsPage.results.event[i].start.time+"</span></p>";
+            else
+              txt+="</span></p>";
+            txt+="<p style='margin:0px; padding: 0px;'>Type: "+upcoming_details.resultsPage.results.event[i].type+"</p>";
+            txt+="</div></div>";
+          }
+        }
+
+            //status = 'more';
+            txt+="<div class = 'container col-10 text-center'><button id='toggleButton' value = 'more' type='button' class='btn btn-primary mt-5' style = 'vertical-align: middle;' onclick=toggleText('more')>Show more</button></div>";
+            txt+="</div>";
+
+  document.getElementById("container").innerHTML = txt;
+}
+else
+{
+  console.log("in else");
+  //txt+="<div class='card-bar' ng-if='showCard'>";
+  for(var i =0; i<upcoming_data.resultsPage.results.event.length; i++)
+            {
+            if(upcoming_data.resultsPage.results.event[i] !=undefined)
+            {
+            txt+="<div class='card mt-2'>";
+            txt+="<div class='card-body'>";
+            if(upcoming_details.resultsPage.results.event[i] !=undefined)
+            if(upcoming_details.resultsPage.results.event[i].hasOwnProperty('uri') && upcoming_details.resultsPage.results.event[i].uri != undefined)
+              txt+="<a href='"+upcoming_details.resultsPage.results.event[i].uri+"' class='card-link' target='_blank'>"+upcoming_details.resultsPage.results.event[i].displayName+"</a>";
+            if(upcoming_details.resultsPage.results.event[i].hasOwnProperty('performance') && upcoming_details.resultsPage.results.event[i].performance[0] != undefined)
+              if(upcoming_details.resultsPage.results.event[i].performance[0].hasOwnProperty('artist') && upcoming_details.resultsPage.results.event[i].performance[0].artist != undefined)
+                if(upcoming_details.resultsPage.results.event[i].performance[0].artist.hasOwnProperty('displayName') && upcoming_details.resultsPage.results.event[i].performance[0].artist.displayName != undefined)
+                  txt+="<p style='margin:0px; padding: 0px;'><span style='color: #FD7E14;'>Artist: "+upcoming_details.resultsPage.results.event[i].performance[0].artist.displayName+" "+"</span><span style='color: #bdbdbd;'>"+moment(upcoming_details.resultsPage.results.event[i].start.date).format("MMM DD, YYYY")+" ";
+            
+            if(upcoming_details.resultsPage.results.event[i].start.hasOwnProperty('time') && upcoming_details.resultsPage.results.event[i].start.time!= null)
+              txt+=upcoming_details.resultsPage.results.event[i].start.time+"</span></p>";
+            else
+              txt+="</span></p>";
+            txt+="<p style='margin:0px; padding: 0px;'>Type: "+upcoming_details.resultsPage.results.event[i].type+"</p>";
+            txt+="</div></div>";
+          }}
+           //status='less';
+            txt+="<div class = 'container col-10 text-center'><button id='toggleButton' value = 'less' type='button' class='btn btn-primary mt-5' style = 'vertical-align: middle;' onclick=toggleText('less')>Show less</button></div>";
+            txt+="</div></div></div>>";
+
+  document.getElementById("container").innerHTML = txt;
+  }
+}
+
+function new_generateHtml(eventsearch_array){
+  var eventsList = eventsearch_array._embedded.events;
+   if($("#favPill").hasClass("active"))
+                    {
+                      $("#resPill").addClass("active");
+                      $("#favPill").removeClass("active");
+                    }
+                var txt = "<html><head><title></title></head><body>";
+                txt += "<div class='tab-content'>";
+                txt += "<div ng-if = '!redShow' ng-controller='myCtrl1' id='favourites' class = 'tab-pane red-bar'>"; // Setting Favourites tab
+                console.log("here");
+                txt += "<div id='favContainer'>";
+                txt+= "<button type='button' id='details' class='btn btn-outline-secondary float-right' disabled onclick='callEventAPI('"+visited_id+"')'>Details ></button>";
+                var mapString = localStorage.getItem("map");
+                var map_array = new Map(JSON.parse(mapString));
+                if(map_array.size != 0)
+                {
+                txt+="<div class='table-responsive'>";
+                txt += "<table id = 'favTable' class='table table-hover tab-content'>";
+                txt += "<thead><tr>";
+                txt += "<th>#</th>";
+                txt += "<th>Date</th>";
+                txt += "<th>Event</th>";
+                txt += "<th>Category</th>";
+                txt += "<th>Venue Info</th>";
+                txt += "<th>Favorite</th>";
+                txt+= "</tr></thead>";  
+                txt+="<tbody>";
+                var i = 1;
+                for(var [key,value] of map_array.entries()) //do for all events (one per row)
+                    {
+                      var stringObj = localStorage.getItem(key);
+
+                      favourites = (JSON.parse(stringObj));
+                      favourites.eventname = ((favourites.eventname).replace("~", "'"));
+                      var unique = 'fav'+favourites.id;
+                      txt+="<tr class='"+unique+"'>";
+                      // var count = i+1;
+                      txt+="<th class='text-nowrap'>"+i+"</th>";
+                      i++;
+                      txt+="<td class='text-nowrap'>" +favourites.date+"<br></td>";
+
+                        //JQuery to initialize tooltips
+                        $(document).ready(function(){
+                          $('[data-toggle="tooltip"]').tooltip(); 
+                        });
+
+                          $(document).ready(function(){
+                            $('[data-toggle="tooltip"]').click(function () {
+                            $('[data-toggle="tooltip"]').tooltip("hide");
+
+                        });
+                      });
+                     
+                       if((favourites.eventname).length > 35)
+                        {
+                          var eventName = (favourites.eventname).substring(0,35);
+                          var lastIndex = eventName.lastIndexOf(" ");
+                          eventName = eventName.substring(0,lastIndex) + " ...";
+                          txt+="<td class='text-nowrap'><a class='text-primary' data-toggle='tooltip' title='"+favourites.eventname+"' data-placement='bottom' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+
+                        }
+                        else//Length is less than 35 characters, display as is.
+                          {
+                            eventName = favourites.eventname;
+                            txt+="<td class='text-nowrap'><a class='text-primary' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+                          }
+                      
+                      txt+="<td class='text-nowrap'>" +favourites.categorygenre+"-"+favourites.categorysegment+"<br></td>";
+                      txt+="<td class='text-nowrap'>" +favourites.venue+"<br></td>";
+                      txt+="<td class='text-nowrap'><button type='button' class='btn btn-outline-secondary' onclick=deleteRow('"+favourites.id+"')><i class='material-icons'>delete</i></button><td>";
+                    txt+="</tr>";
+                    txt+="</tr>";
+                    }
+                txt+="</tbody></table></div>";
+                txt+= "</div></div>";
+              }
+              else
+                  {
+                    txt += "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div></div></div>";
+                  }
+   txt+= "<div ng-if = '!redShow' ng-controller='myCtrl1' id='result' class = 'tab-pane active red-bar'>";
+                // txt+="<button ng-click='redShow=true'>Click me</button>";
+                txt+= "<button type='button' id='detailsButton' class='btn btn-outline-secondary float-right mb-2' disabled onclick= callEventAPI('"+visited_id+"')>Details ></button>"; // Setting data in Results Tab
+
+                txt += "<div class=table-responsive>";
+                txt += "<table id = 'eventTable' class='table table-hover tab-content'>";
+                txt += "<thead><tr>";
+                txt += "<th>#</th>";
+                txt += "<th>Date</th>";
+                txt += "<th>Event</th>";
+                txt += "<th>Category</th>";
+                txt += "<th>Venue Info</th>";
+                txt += "<th>Favorite</th>";
+                txt+= "</tr></thead>";  
+                txt+="<tbody>";
+                for(var i=0;i<eventsList.length;i++) //do for all events (one per row)
+                    {    
+                        eventsNodeList=eventsList[i]; //get properties of an event (an object)
+                        txt+="<tr class='"+eventsList[i].id+"'>";
+                        var count = i+1;
+                        txt+="<th class='text-nowrap'>"+count+"</th>";
+                        
+                        if(eventsNodeList.hasOwnProperty('dates')){
+                            if(eventsNodeList.dates.hasOwnProperty('start'))
+                                if((eventsNodeList.dates.start.hasOwnProperty('localDate')) && ((eventsNodeList.dates.start.localDate) != 'Undefined' && eventsNodeList.dates.start.localDate != undefined))
+                            txt+="<td class='text-nowrap' align = 'center'>" +eventsNodeList.dates.start.localDate+"<br></td>";
+                        }
+                       
+                       //Logic to trim the event name and append ...
+                       if((eventsNodeList.name).length > 35)
+                        {
+                          var eventName = (eventsNodeList.name).substring(0,35);
+                          var lastIndex = eventName.lastIndexOf(" ");
+                          eventName = eventName.substring(0,lastIndex) + " ...";
+                          //globalName = eventName;
+                          if((eventsNodeList.hasOwnProperty('name')) && (eventsNodeList.name != undefined)){
+                            txt+="<td class='text-nowrap'><a class='text-primary' data-toggle='tooltip' title='"+eventsNodeList.name+"' data-placement='bottom' id = 'event_to_underline' style='cursor:pointer; ' onclick = callEventAPI('"+eventsNodeList.id+"')>" +eventName+ "</a></td>";}
+                          else
+                            {
+                              txt+="<td class='text-nowrap'>N/A</td>";}
+                            }
+                        else//Length is less than 35 characters, display as is.
+                         {
+                          eventName = eventsNodeList.name;
+                          txt+="<td class='text-nowrap'><a class='text-primary' id = 'event_to_underline' style='cursor:pointer; ' onclick = callEventAPI('"+eventsNodeList.id+"')>" +eventName+ "</a></td>";
+                         }
+                        
+                        //JQuery to initialize tooltips
+                        $(document).ready(function(){
+                          $('[data-toggle="tooltip"]').tooltip(); 
+                        });
+
+                          $(document).ready(function(){
+                            $('[data-toggle="tooltip"]').click(function () {
+                            $('[data-toggle="tooltip"]').tooltip("hide");
+
+                        });
+                      });
+                        
+                       
+
+                         if(eventsNodeList.hasOwnProperty('classifications'))
+                          {
+                            if(eventsNodeList.classifications[0].hasOwnProperty('genre'))
+                            {
+                                if((eventsNodeList.classifications[0].genre.hasOwnProperty('name')) && ((eventsNodeList.classifications[0].genre.name) != 'Undefined' && (eventsNodeList.classifications[0].genre.name) != undefined))
+                                { 
+                                txt+="<td class='text-nowrap'>"+eventsNodeList.classifications[0].genre.name+"-";
+                                var genre = eventsNodeList.classifications[0].genre.name;
+                                }    
+                              else
+                                {
+                                  var genre = "N/A";
+                                  txt+="<td> ";
+                                }}
+                           else
+                            {
+                              var genre = "N/A";
+                              txt+="<td> ";
+                            }
+                        
+                      }
+
+                         if(eventsNodeList.hasOwnProperty('classifications'))
+                          {
+                            if(eventsNodeList.classifications[0].hasOwnProperty('segment'))
+                                if((eventsNodeList.classifications[0].segment.hasOwnProperty('name')) && ((eventsNodeList.classifications[0].segment.name) != 'Undefined' && (eventsNodeList.classifications[0].segment.name) != undefined)) 
+                                txt+=eventsNodeList.classifications[0].segment.name+"</td>";
+                                var segment = eventsNodeList.classifications[0].segment.name;
+                          }
+                        else
+                          {
+                            txt+="N/A</td>";
+                            var segment = "N/A";
+                          }
+
+                        if((eventsNodeList._embedded.venues[0].hasOwnProperty('name')) && (eventsNodeList._embedded.venues[0].name) != 'Undefined' && (eventsNodeList._embedded.venues[0].name) != undefined ){
+                            txt+="<td class='text-nowrap'>"+eventsNodeList._embedded.venues[0].name+"</td>";
+                            }
+                        else{
+                             txt+="<td>N/A</td>";
+                        }
+                        eventname = ((eventsNodeList.name).replace("'", ''));
+                        var name = eventsNodeList.id;
+                        var addObject = {
+                        'date': eventsNodeList.dates.start.localDate,
+                        'eventname': eventName,
+                        'categorygenre': genre,
+                        'categorysegment': segment,
+                        'venue':  eventsNodeList._embedded.venues[0].name,
+                        'id': eventsNodeList.id
+                      }
+            //addObject = JSON.stringify(addObject);
+            addObject = (JSON.stringify(addObject));
+                    if(localStorage.getItem(eventsNodeList.id)===null)
+                        txt+="<td class='text-nowrap'><button type='button' id='"+eventsNodeList.id+"' class='btn btn-outline-secondary myStarButton testClass' onclick = changeStar('"+encodeURIComponent(addObject)+"')><i border = solid class='material-icons'>star_border</i></button><td>";
+                      else
+                        txt+="<td class='text-nowrap'><button type='button' id='"+eventsNodeList.id+"' class='btn btn-outline-secondary myStarButton' onclick = changeStar('"+encodeURIComponent(addObject)+"')><i border = solid class='material-icons yellow'>star</i></button><td>";
+                    txt+="</tr>";
+                    }
+                 
+                txt += "</tbody></table></div></div></div></body></html>";
+               // document.getElementById("addtable").innerHTML = txt;
+
+             var $newDiv1 = $(txt);
+                  $('#addtable').append($newDiv1);
+
+                  angular.element(document).injector().invoke(function ($compile, $rootScope) {
+                  $rootScope.$apply(function() {
+                      var scope = angular.element($newDiv1).scope();
+                      $compile($newDiv1)(scope);
+                  });
+              });  
+   }
+
+function highlightText(){
+  //console.log(visited_id);
+  if($("#favPill").hasClass("active"))
+  {
+    
+    console.log("in if");
+    $("#favourites").addClass("active");
+    $("#result").removeClass("active");
+    makeFavoritesTable(0);
+    $('#details').prop("disabled",false);
+    //new_generateHtml(event_data);   
+}
+  else
+    {
+      console.log("In else");
+      $("#result").addClass("active");
+      $("#favourites").removeClass("active");
+      $("#addtable").html("");
+      new_generateHtml(data_event);
+      $('#detailsButton').prop("disabled",false);
+  } 
+  //$('#detailsButton').prop("disabled",false); 
+  console.log("Highlighting");
+  console.log(visited_id); 
+  $('.'+visited_id).css('background-color', '#ffcc99');
+}
+
+//var status;
+function toggleText(status)
+{
+    //var text="Here is some text that I want added to the HTML file";
+    if (status == "more") {
+      console.log("In toggle text more");
+        //document.getElementById("toggleButton").innerText = "Show Less";
+        
+        var txt = "";
+        //Add 1st 5 cards and don't add animation to them
+        for(var i =0; i<5; i++)
+            { 
+              if(upcoming_data.resultsPage.results.event[i] !=undefined)
+              {
+              txt+="<div class='card mt-2'>";
+              txt+="<div class='card-body'>";
+              
+              if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('uri') && upcoming_data.resultsPage.results.event[i].uri != undefined)
+                txt+="<a href='"+upcoming_data.resultsPage.results.event[i].uri+"' class='card-link' target='_blank'>"+upcoming_data.resultsPage.results.event[i].displayName+"</a>";
+                if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('performance') && upcoming_data.resultsPage.results.event[i].performance[0] != undefined)
+                  if(upcoming_data.resultsPage.results.event[i].performance[0].hasOwnProperty('artist') && upcoming_data.resultsPage.results.event[i].performance[0].artist != undefined)
+                    if(upcoming_data.resultsPage.results.event[i].performance[0].artist.hasOwnProperty('displayName') && upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName != undefined)
+                      txt+="<p style='margin:0px; padding: 0px;'><span style='color: #FD7E14;'>Artist: "+upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName+" "+"</span><span style='color: #bdbdbd;'>"+moment(upcoming_data.resultsPage.results.event[i].start.date).format("MMM DD, YYYY")+" ";
+              
+              if(upcoming_data.resultsPage.results.event[i].start.hasOwnProperty('time') && upcoming_data.resultsPage.results.event[i].start.time!= null)
+                txt+=upcoming_data.resultsPage.results.event[i].start.time+"</span></p>";
+              else
+                txt+="</span></p>";
+              txt+="<p style='margin:0px; padding: 0px;'>Type: "+upcoming_data.resultsPage.results.event[i].type+"</p>";
+              txt+="</div></div>";
+          }
+        }
+        //document.getElementById("container").innerHTML=txt;
+
+        //Adding animation from 6th card onwards
+        txt += "<div id = 'test' class='card-bar' ng-if='showCard'>";
+        for(var i =5; i<upcoming_data.resultsPage.results.event.length; i++)
+        {
+
+          if(upcoming_data.resultsPage.results.event[i] !=undefined)
+          {
+            console.log("entering second for loop");
+            txt+="<div class='card mt-2'>";
+            txt+="<div class='card-body'>";
+
+          if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('uri') && upcoming_data.resultsPage.results.event[i].uri != undefined)
+            txt+="<a href='"+upcoming_data.resultsPage.results.event[i].uri+"' class='card-link' target='_blank'>"+upcoming_data.resultsPage.results.event[i].displayName+"</a>";
+          if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('performance') && upcoming_data.resultsPage.results.event[i].performance[0] != undefined)
+            if(upcoming_data.resultsPage.results.event[i].performance[0].hasOwnProperty('artist') && upcoming_data.resultsPage.results.event[i].performance[0].artist != undefined)
+              if(upcoming_data.resultsPage.results.event[i].performance[0].artist.hasOwnProperty('displayName') && upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName != undefined)
+                txt+="<p style='margin:0px; padding: 0px;'><span style='color: #FD7E14;'>Artist: "+upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName+" "+"</span><span style='color: #bdbdbd;'>"+moment(upcoming_data.resultsPage.results.event[i].start.date).format("MMM DD, YYYY")+" ";
+
+          if(upcoming_data.resultsPage.results.event[i].start.hasOwnProperty('time') && upcoming_data.resultsPage.results.event[i].start.time!= null)
+            txt+=upcoming_data.resultsPage.results.event[i].start.time+"</span></p>";
+          else
+            txt+="</span></p>";
+          txt+="<p style='margin:0px; padding: 0px;'>Type: "+upcoming_data.resultsPage.results.event[i].type+"</p>";
+          txt+="</div></div>";
+          }
+        }
+        txt+="</div>";
+          //status = "more";
+          txt+="<div class = 'container col-10 text-center'><button id='toggleButton' value = 'less' type='button' class='btn btn-primary mt-5 ' style = 'vertical-align: middle;' ng-click = 'showCard=true' onclick=toggleText('less')>Show less</button></div>";
+          //txt+="</div>";
+          
+          
+          //document.getElementById("container").innerHTML=txt;
+          $('#container').html("");
+              //$('#container').append(txt);
+              var $newDiv1 = $(txt);
+              $('#container').append($newDiv1);
+
+                    angular.element(document).injector().invoke(function ($compile, $rootScope) {
+                    $rootScope.$apply(function() {
+                        var scope = angular.element($newDiv1).scope();
+                        $compile($newDiv1)(scope);
+                    });
+                });
+        } 
+    else if (status == "less") {
+    console.log("In toggle text less");
+/*    var txt ="<br><div class='row'><div class = 'col-sm-3' padding: 0px;>";
+    //status = 'more';
+    txt+="<select id = 'ordering' name='ordering' class='custom-select' onchange = callSort1() onclick='ascending.disabled = false'>";
+    txt+="<option selected value='default'>Default</option><option value='event'>Event Name</option><option value='time'>Time</option><option value='artist'>Artist</option><option value='type'>Type</option></select></div>";
+    txt+="<div class = 'col-sm-3'>";
+    txt+="<select id = 'ascending' name='ascending' class='custom-select' onchange = callSort1() disabled>";
+    txt+="<option selected value='asc'>Ascending</option><option value='des'>Descending</option></select></div></div>";*/
+
+    var txt ="<div class='card-bar' ng-if='showCard'><br>";
+    //txt+="<div id='container'><br>"; //First 5 so not adding animation
+            for(var i =0; i<5; i++)
+            {
+              if(upcoming_data.resultsPage.results.event[i] !=undefined)
+              {
+              txt+="<div class='card mt-2'>";
+              txt+="<div class='card-body'>";
+              
+              if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('uri') && upcoming_data.resultsPage.results.event[i].uri != undefined)
+                txt+="<a href='"+upcoming_data.resultsPage.results.event[i].uri+"' class='card-link' target='_blank'>"+upcoming_data.resultsPage.results.event[i].displayName+"</a>";
+              if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('performance') && upcoming_data.resultsPage.results.event[i].performance[0] != undefined)
+                if(upcoming_data.resultsPage.results.event[i].performance[0].hasOwnProperty('artist') && upcoming_data.resultsPage.results.event[i].performance[0].artist != undefined)
+                  if(upcoming_data.resultsPage.results.event[i].performance[0].artist.hasOwnProperty('displayName') && upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName != undefined)
+                    txt+="<p style='margin:0px; padding: 0px;'><span style='color: #FD7E14;'>Artist: "+upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName+" "+"</span><span style='color: #bdbdbd;'>"+moment(upcoming_data.resultsPage.results.event[i].start.date).format("MMM DD, YYYY")+" ";
+              
+              if(upcoming_data.resultsPage.results.event[i].start.hasOwnProperty('time') && upcoming_data.resultsPage.results.event[i].start.time!= null)
+                txt+=upcoming_data.resultsPage.results.event[i].start.time+"</span></p>";
+              else
+                txt+="</span></p>";
+              txt+="<p style='margin:0px; padding: 0px;'>Type: "+upcoming_data.resultsPage.results.event[i].type+"</p>";
+              txt+="</div></div>";
+          }}
+            //document.getElementById("toggleButton").innerText = "Show More";
+            //status = "less";
+            txt+="<div class = 'container col-10 text-center'><button id='toggleButton' value = 'more' type='button' class='btn btn-primary mt-5' style = 'vertical-align: middle; ' onclick=toggleText('more') ng-click = 'showCard=true'>Show more</button></div>";
+            txt+="</div>";
+        //document.getElementById("upcoming").innerHTML = txt;
+       
+       $('#container').html("");
+        //$('#upcoming').append(txt);
+             var $newDiv1 = $(txt);
+            $('#container').append($newDiv1);
+
+                  angular.element(document).injector().invoke(function ($compile, $rootScope) {
+                  $rootScope.$apply(function() {
+                      var scope = angular.element($newDiv1).scope();
+                      $compile($newDiv1)(scope);
+                  });
+              });
+       
+    }
+}
+
+   function createEventDetails(eventdetails_array, venueDetails_array, artistDetails_array){
+            //console.log("Inside function");
+            //console.log(search_data);
+            /*$("#resPill").addClass("active");
+                if($("#favPill").hasClass("active")) {
+                    $("#favPill").removeClass("active");
+                    $("#favPill").removeClass("show");
+                }*/
+            console.log("from create event");
+            //$('#progress-bar').css("display", "none");
+            txt=' ';
+            txt="<html><head><title></title></head><body>";
+            txt+= "<div class='tab-content'>";
+            txt+= "<div id='favourites' class = 'tab-pane'>"; // Setting Favourites tab
+            txt += "<div id='favContainer'>";
+           var mapString = localStorage.getItem("map");
+                var map_array = new Map(JSON.parse(mapString));
+                if(map_array.size != 0)
+                {
+                console.log("here");
+                txt += "<button type='button' id='details' class='btn btn-outline-secondary float-right' disabled onclick = callEventAPI('"+visited_id+"')>Details ></button>";
+                txt += "<div class='table-responsive'>";
+                txt += "<table id = 'favTable' class='table table-hover tab-content'>";
+                txt += "<thead><tr>";
+                txt += "<th>#</th>";
+                txt += "<th>Date</th>";
+                txt += "<th>Event</th>";
+                txt += "<th>Category</th>";
+                txt += "<th>Venue Info</th>";
+                txt += "<th>Favorite</th>";
+                txt+= "</tr></thead>";  
+                txt+="<tbody>";
+                var i = 1;
+                for(var [key,value] of map_array.entries()) //do for all events (one per row)
+                    {
+                      var stringObj = localStorage.getItem(key);
+
+                      favourites = (JSON.parse(stringObj));
+                      favourites.eventname = ((favourites.eventname).replace("~", "'"));
+                      var unique = 'fav'+favourites.id;
+                      txt+="<tr class='"+unique+"'>";
+                      // var count = i+1;
+                      txt+="<th class='text-nowrap'>"+i+"</th>";
+                      i++;
+                      txt+="<td class='text-nowrap'>" +favourites.date+"<br></td>";
+                      
+                        //JQuery to initialize tooltips
+                        $(document).ready(function(){
+                          $('[data-toggle="tooltip"]').tooltip(); 
+                        });
+
+                          $(document).ready(function(){
+                            $('[data-toggle="tooltip"]').click(function () {
+                            $('[data-toggle="tooltip"]').tooltip("hide");
+
+                        });
+                      });
+
+                       if((favourites.eventname).length > 35)
+                        {
+                          var eventName = (favourites.eventname).substring(0,35);
+                          var lastIndex = eventName.lastIndexOf(" ");
+                          eventName = eventName.substring(0,lastIndex) + " ...";
+                          txt+="<td class='text-nowrap'><a class='text-primary' data-toggle='tooltip' title='"+favourites.eventname+"' data-placement='bottom' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+
+                        }
+                        else//Length is less than 35 characters, display as is.
+                          {
+                            eventName = favourites.eventname;
+                            txt+="<td class='text-nowrap'><a class='text-primary' style='cursor:pointer; ' onclick = callEventAPI('"+unique+"')>" +eventName+ "</a><br></td>";
+                          }
+
+                      txt+="<td class='text-nowrap'>" +favourites.categorygenre+"-"+favourites.categorysegment+"<br></td>";
+                      txt+="<td class='text-nowrap'>" +favourites.venue+"<br></td>";
+                      txt+="<td><button type='button' class='btn btn-outline-secondary' onclick=deleteRow('"+favourites.id+"')><i class='material-icons'>delete</i></button><td>";
+                    txt+="</tr>";
+                    txt+="</tr>";
+                    }
+                txt+="</tbody></table></div>";
+                txt+= "</div>";
+            
+            txt+= "</div>";
+            }
+            else
+                  {
+                    txt += "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div></div></div>";
+                  }
+            txt+= "<div id='result' class = 'tab-pane active'>";
+            //console.log(eventdetails_array.id);
+           
+            eventname = ((eventdetails_array.name).replace("'", ''));
+            if(eventdetails_array.hasOwnProperty('classifications')){ 
+            var addObject = {
+              'date': eventdetails_array.dates.start.localDate,
+              'eventname': eventname,
+              'categorygenre': eventdetails_array.classifications[0].genre.name,
+              'categorysegment': eventdetails_array.classifications[0].segment.name,
+              'venue':  eventdetails_array._embedded.venues[0].name,
+              'id': eventdetails_array.id
+            }
+          }
+            else{
+               var addObject = {
+              'date': eventdetails_array.dates.start.localDate,
+              'eventname': eventname,
+              'categorygenre': "N/A",
+              'categorysegment': " ",
+              'venue':  eventdetails_array._embedded.venues[0].name,
+              'id': eventdetails_array.id
+            }}
+            
+            //addObject = JSON.stringify(addObject);
+            addObject = (JSON.stringify(addObject));
+             txt+="<h4 align='center'>"+eventdetails_array.name+"</h4>";
+              txt+="<button type='button' class='btn btn-outline-secondary float-left' onclick= 'highlightText()'> < List </button>";
+            if(localStorage.getItem(eventdetails_array.id)===null)
+                        txt+="<td><button type='button' id='"+eventdetails_array.id+"' class='btn btn-outline-secondary myStarButton testClass float-right' onclick = changeStar('"+encodeURIComponent(addObject)+"')><i border = solid class='material-icons'>star_border</i></button><td>";
+            else
+                        txt+="<td><button type='button' id='"+eventdetails_array.id+"' class='btn btn-outline-secondary myStarButton float-right' onclick = changeStar('"+encodeURIComponent(addObject)+"')><i border = solid class='material-icons yellow'>star</i></button><td>";
+            
+            var tweetText = "Check out "+eventdetails_array.name+" located at "+eventdetails_array._embedded.venues[0].name+". Website: ";
+            var tweetLink = eventdetails_array.url;
+            var hashTag = "CSCI571EventSearch";
+            var twitterURL = "https://twitter.com/intent/tweet?text="+tweetText+"&url="+tweetLink+"&hashtags="+hashTag;
+            txt+="<a href='"+twitterURL+"' target='_blank' class='float-right mr-2'><img src='http://csci571.com/hw/hw8/Images/Twitter.png' width=36px height=36px></a><br><br>"; // Setting data in Results Tab
+           
+
+            txt+="<ul id='align-flex' class='nav nav-tabs justify-content-end' role='tablist'><li class='nav-item'><a class='nav-link active' href='#event' data-toggle='tab' role='tab'>Event</a></li><li class='nav-item'><a class='nav-link' href='#artist' data-toggle='tab' role='tab'><span class='desktop'>Artist/Team(s)</span><span class='mobile'>Artist</span></a></li><li class='nav-item'><a class='nav-link' href='#venue' data-toggle='tab' role='tab'>Venue</a></li><li class='nav-item'><a class='nav-link' href='#upcoming' data-toggle='tab' role='tab'><span class='desktop'>Upcoming Events</span><span class='mobile'>Upcoming</span></a></li></ul>";
+            
+            txt+="<div class='tab-content'>";
+            txt+="<div id='event' class='container tab-pane active table-responsive'><br>";
+            txt+="<div class='table-responsive'>";
+            txt+= "<table class='table table-striped'>";
+            var attractions = [];
+            if(eventdetails_array._embedded.hasOwnProperty('attractions')){
+            txt+="<tr>"; 
+            txt+="<td class='text-nowrap'><b>Artist/Team(s)</b><br></td><td class='text-nowrap'>";
+            for(var i=0; i<eventdetails_array._embedded.attractions.length; i++)
+                {
+                    //console.log(eventdetails_array._embedded.attractions[i])
+                    if(i!=eventdetails_array._embedded.attractions.length-1 && (eventdetails_array._embedded.attractions[i].hasOwnProperty('name')) && (
+                      eventdetails_array._embedded.attractions[i].name != 'Undefined'))
+                        txt += eventdetails_array._embedded.attractions[i].name + " | ";
+                    else if((eventdetails_array._embedded.attractions[i].hasOwnProperty('name')) && (eventdetails_array._embedded.attractions[i].name != 'Undefined'))
+                        txt += eventdetails_array._embedded.attractions[i].name;
+                }
+            txt+="</td></tr>";
+            }
+            if(eventdetails_array._embedded.hasOwnProperty('venues'))
+            if(eventdetails_array._embedded.venues[0].hasOwnProperty('name'))
+            {
+                txt+="<tr>"; 
+                txt+="<td class='text-nowrap'><b>Venue</b><br></td><td class='text-nowrap'>" + eventdetails_array._embedded.venues[0].name+ "</td>";
+                txt+="</tr>";
+            }
+            txt+="<tr>"; 
+            if(eventdetails_array.hasOwnProperty('dates'))
+            if(eventdetails_array.dates.hasOwnProperty('start'))
+               if(eventdetails_array.dates.start.hasOwnProperty('localDate')){
+                txt+="<td class='text-nowrap'><b>Time</b><br></td><td class='text-nowrap'>"+moment(eventdetails_array.dates.start.localDate).format("MMM DD, YYYY");
+            //txt+="<td><b>Date</b><br></td><td>" + eventdetails_array.dates.start.localDate;
+            }
+
+            if(eventdetails_array.hasOwnProperty('dates'))
+            if(eventdetails_array.dates.hasOwnProperty('start'))
+               if(eventdetails_array.dates.start.hasOwnProperty('localTime')){
+            txt+=" "+eventdetails_array.dates.start.localTime+"</td>";
+            }
+            txt+="</tr>";
+
+            //txt+=""; 
+            
+            if(eventdetails_array.hasOwnProperty('classifications'))
+            if(eventdetails_array.classifications[0].hasOwnProperty('segment'))
+                    if(eventdetails_array.classifications[0].segment.hasOwnProperty('name') && (eventdetails_array.classifications[0].segment.name != 'Undefined') && eventdetails_array.classifications[0].segment.name != undefined){
+                    txt+="<tr><td class='text-nowrap'><b>Category</b><br></td>";
+                    txt+="<td class='text-nowrap'>"+eventdetails_array.classifications[0].segment.name+" | ";
+                  }
+
+            if(eventdetails_array.hasOwnProperty('classifications'))    
+            if(eventdetails_array.classifications[0].genre.hasOwnProperty('name') && (eventdetails_array.classifications[0].genre.name != 'Undefined'))
+
+                    txt+= eventdetails_array.classifications[0].genre.name+"</td>";
+            txt+="</tr>";
+
+            if(eventdetails_array.hasOwnProperty('priceRanges')){
+            txt+="<tr>"; 
+            //Has min and max and currency
+              const formatter = new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: eventdetails_array.priceRanges[0].currency,
+              minimumFractionDigits: 2
+                })
+
+            if(eventdetails_array.priceRanges[0].hasOwnProperty('min') && (eventdetails_array.priceRanges[0].min != 'Undefined') && eventdetails_array.priceRanges[0].hasOwnProperty('max')){
+                txt+="<td class='text-nowrap'><b>Price Ranges</b><br></td><td class='text-nowrap'>" + formatter.format(eventdetails_array.priceRanges[0].min) + " ~ "+ formatter.format(eventdetails_array.priceRanges[0].max)+"</td>";              
+            }
+            //Has only min and currency
+            else if(eventdetails_array.priceRanges[0].hasOwnProperty('min') && (eventdetails_array.priceRanges[0].min != 'Undefined'))
+            {
+                txt+="<td class='text-nowrap'><b>Price Ranges</b><br></td>" +formatter.format(eventdetails_array.priceRanges[0].min)+"</td>";
+            }
+            
+            //Has only max and currency
+            else if(eventdetails_array.priceRanges[0].hasOwnProperty('max') && (eventdetails_array.priceRanges[0].max != 'Undefined')){
+                txt+="<td class='text-nowrap'><b>Price Ranges</b><br>" + formatter.format(eventdetails_array.priceRanges[0].max)+"</td>";
+            }
+            txt+="</tr>";
+            }
+
+            if(eventdetails_array.hasOwnProperty('dates'))
+            if(eventdetails_array.dates.hasOwnProperty('status')){
+            txt+="<tr>"; 
+            if(eventdetails_array.dates.status.hasOwnProperty('code') && (eventdetails_array.dates.status.code != 'Undefined'))
+                txt+="<td class='text-nowrap'><b>Ticket Status</b><br></td><td class='text-nowrap'>" + eventdetails_array.dates.status.code+ "</td>";
+            txt+="</tr>";}
+
+            if(eventdetails_array.hasOwnProperty('url') && (eventdetails_array.url != 'Undefined')){
+            txt+="<tr>"; 
+            txt+="<td class='text-nowrap'><b>Buy Ticket At</b></td><td class='text-nowrap'><a class = 'hover_links' href='"+eventdetails_array.url+"'target='_blank'>Ticketmaster</a></td>";
+            txt+="</tr>";}
+
+            txt+="<tr>";
+            if(eventdetails_array.hasOwnProperty('seatmap'))
+                {
+                    if((eventdetails_array.seatmap.hasOwnProperty('staticUrl')) && (eventdetails_array.seatmap.staticUrl) != 'Undefined' && eventdetails_array.seatmap.staticUrl != 'undefined')
+                    txt+="<td class='text-nowrap'><b>Seat Map</b></td><td class='text-nowrap'><a data-toggle='modal' data-target='#myModal' href='"+eventdetails_array.seatmap.staticUrl+"'target='_blank'>View Seat Map Here</a></td>";
+                  var img_text = "<a href='"+eventdetails_array.seatmap.staticUrl+"' target='_blank'><img src='"+eventdetails_array.seatmap.staticUrl+"' width=100% height = 250px></img></a>";
+                  document.getElementById("staticUrlImage").innerHTML = img_text;
+
+                }
+            txt+="</tr>";
+            txt+="</table></div>";
+
+            txt+="</div><div id='venue' class='container tab-pane fade'><br>";
+            if(venueDetails_array.page.totalElements !=0)
+            {
+            txt+= "<table class='table table-striped'>";
+            txt+="<thead><tr><td colspan='2'><h4 align='center'>"+venueDetails_array._embedded.venues[0].name+"</h4></tr></thead>"; //Write heading here
+            txt+="<tbody><tr><td><b>Address</b></td><td>";
+            if(venueDetails_array.hasOwnProperty('_embedded'))
+                           {
+                              if(venueDetails_array._embedded.hasOwnProperty('venues'))
+                              if(venueDetails_array._embedded.venues[0].hasOwnProperty('address'))
+                              if(venueDetails_array._embedded.venues[0].address.hasOwnProperty('line1') && venueDetails_array._embedded.venues[0].address.line1 !='Undefined' && venueDetails_array._embedded.venues[0].address.line1 !=undefined)
+                                txt+=venueDetails_array._embedded.venues[0].address.line1+"</td></tr>";
+                           }
+            txt+="<tr><td><b>City</b></td>";
+            txt+="<td>";
+            if(venueDetails_array.hasOwnProperty('_embedded'))
+                           {
+                              if(venueDetails_array._embedded.hasOwnProperty('venues'))
+                              if(venueDetails_array._embedded.venues[0].hasOwnProperty('city'))
+                              if(venueDetails_array._embedded.venues[0].city.hasOwnProperty('name') && venueDetails_array._embedded.venues[0].city.name != 'Undefined' && venueDetails_array._embedded.venues[0].city.name != undefined && venueDetails_array._embedded.venues[0].state.name!=undefined)
+                                txt+= venueDetails_array._embedded.venues[0].city.name+","+venueDetails_array._embedded.venues[0].state.name+"</td></tr>";
+                           }
+                        else
+                            {
+                                txt+= "N/A</td></tr>";
+                            }
+            if(venueDetails_array.hasOwnProperty('_embedded'))
+                           {
+                              if(venueDetails_array._embedded.hasOwnProperty('venues'))
+                              if(venueDetails_array._embedded.venues[0].hasOwnProperty('boxOfficeInfo'))
+                              if(venueDetails_array._embedded.venues[0].boxOfficeInfo.hasOwnProperty('phoneNumberDetail') && venueDetails_array._embedded.venues[0].boxOfficeInfo.phoneNumberDetail != 'Undefined' && venueDetails_array._embedded.venues[0].boxOfficeInfo.phoneNumberDetail != undefined){
+                              txt+="<tr><td><b>Phone Number</b></td>";
+                              txt+="<td>"+venueDetails_array._embedded.venues[0].boxOfficeInfo.phoneNumberDetail+"</td></tr>";
+                           } 
+                         }
+
+             if(venueDetails_array.hasOwnProperty('_embedded'))
+                           {
+                              if(venueDetails_array._embedded.hasOwnProperty('venues'))
+                              if(venueDetails_array._embedded.venues[0].hasOwnProperty('boxOfficeInfo'))
+                              if(venueDetails_array._embedded.venues[0].boxOfficeInfo.hasOwnProperty('openHoursDetail') && venueDetails_array._embedded.venues[0].boxOfficeInfo.openHoursDetail != 'Undefined' && venueDetails_array._embedded.venues[0].boxOfficeInfo.openHoursDetail != undefined){
+                              txt+="<tr><td><b>Open Hours</b></td>";
+                              txt+="<td>"+venueDetails_array._embedded.venues[0].boxOfficeInfo.openHoursDetail+"</td></tr>";
+                            }
+                          }
+               if(venueDetails_array.hasOwnProperty('_embedded'))
+                           {
+                              if(venueDetails_array._embedded.hasOwnProperty('venues'))
+                              if(venueDetails_array._embedded.venues[0].hasOwnProperty('generalInfo'))
+                              if(venueDetails_array._embedded.venues[0].generalInfo.hasOwnProperty('generalRule') && venueDetails_array._embedded.venues[0].generalInfo.generalRule != 'Undefined' && venueDetails_array._embedded.venues[0].generalInfo.generalRule != undefined){
+                              txt+="<tr><td><b>General Rule</b></td>";
+                              txt+="<td>"+venueDetails_array._embedded.venues[0].generalInfo.generalRule+"</td></tr>";
+                            }
+                          }
+
+
+             if(venueDetails_array.hasOwnProperty('_embedded'))
+                           {
+                              if(venueDetails_array._embedded.hasOwnProperty('venues'))
+                              if(venueDetails_array._embedded.venues[0].hasOwnProperty('generalInfo'))
+                              if(venueDetails_array._embedded.venues[0].generalInfo.hasOwnProperty('childRule') && venueDetails_array._embedded.venues[0].generalInfo.childRule != 'Undefined' && venueDetails_array._embedded.venues[0].generalInfo.childRule != undefined){
+                              txt+="<tr><td><b>Child Rule</b></td>";
+                              txt+="<td>"+venueDetails_array._embedded.venues[0].generalInfo.childRule+"</td></tr>";
+                            }
+                          }
+            txt+="<tr><td style='margin: 0px; padding: 0px;'colspan = 2><div id='map'></div></td><tr></tbody>";
+            txt+="</table>";
+          }
+          else
+          {
+             txt+= "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div>";
+            document.getElementById('addtable').innerHTML=txt; 
+          }
+            
+            //Starting Artists/Teams tab
+            txt+="</div><div id='artist' class='container tab-pane fade'><br>";
+            console.log(artistDetails_array);
+            console.log(search_data);
+            //console.log(search_data);
+            if ((artistDetails_array !== undefined && artistDetails_array.length != 0) || (search_data!==undefined && search_data.length!=0))
+              {
+                for(k=0;k<search_data.length;k++)
+                {
+                  if(artistDetails_array !== undefined && artistDetails_array.length !=0)
+                  {
+                  for(j =0; j<artistDetails_array.length; j++)
+                    {
+                      var event_name = (eventdetails_array._embedded.attractions[k].name).toLowerCase();
+                      var artist_name = (artistDetails_array[j].artists.items[0].name).toLowerCase();
+                      console.log(event_name);
+                      console.log(artist_name);
+                      if(event_name == artist_name)
+                      {
+                        txt+= "<table class='table table-striped'>";
+                        txt+="<tr><td colspan='2'><h4 align='center'>"+artistDetails_array[j].artists.items[0].name+"</h4></tr>";
+                        txt+="<tr><td><b>Name</b></td><td>"+artistDetails_array[j].artists.items[0].name+"</td></tr>";
+                        txt+="<tr><td><b>Followers</b></td><td>"+(artistDetails_array[j].artists.items[0].followers.total).toLocaleString()+"</td></tr>";
+                        var popular_id = 'popular' + j;
+                        txt+="<tr><td><b>Popularity</b></td><td id='"+popular_id+"'></td></tr>";
+                        txt+="<td><b>Check At</b></td><td><a class = 'hover_links' href='"+artistDetails_array[j].artists.items[0].external_urls.spotify+"'target='_blank'>Spotify</a></td>";
+                        txt+="</table>";
+                      }
+                    }
+                  }
+                for(j =0; j<search_data.length; j++){
+                  console.log("Search below:")
+                  console.log(search_data);
+
+                 if(search_data[j].hasOwnProperty('items') && search_data[j].items[0].hasOwnProperty('title'))
+                {
+                 var title = (search_data[j].items[0].title).toLowerCase();
+                 var name = (eventdetails_array._embedded.attractions[k].name);
+                 console.log(title);
+                 console.log(name);
+                 if(name == search_data[j].queries.request[0].searchTerms)
+                 {
+                  txt+= "<br><p align = 'center'>"+eventdetails_array._embedded.attractions[k].name+"</p>";
+                  txt+= "<div class='container'>";
+                  txt+="<div class='row'>";
+                  txt+="<div class = 'col-sm-3'>";
+                  if(search_data[j].hasOwnProperty('items') && search_data[j].items[0]!=undefined)
+                    if(search_data[j].items[0].hasOwnProperty('link'))
+                    {
+                      txt+="<div class='card mt-5'><a href='"+search_data[j].items[0].link+"' target='_blank'><img src='"+search_data[j].items[0].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                  }   
+                  if(search_data[j].hasOwnProperty('items') && search_data[j].items[3]!=undefined)
+                    if(search_data[j].items[3].hasOwnProperty('link'))
+                    {
+                      txt+="<div class='card mt-1'><a href='"+search_data[j].items[3].link+"' target='_blank'><img src='"+search_data[j].items[3].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                  }        
+               txt+="</div>"; 
+               //txt+="<div class='row'>";
+               txt+="<div class = 'col-sm-3'>";
+                    if(search_data[j].hasOwnProperty('items') && search_data[j].items[1]!=undefined)
+                      if(search_data[j].items[1].hasOwnProperty('link'))
+                      {
+                        txt+="<div class='card mt-1'><a href='"+search_data[j].items[1].link+"' target='_blank'><img src='"+search_data[j].items[1].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                    }  
+                    if(search_data[j].hasOwnProperty('items') && search_data[j].items[4]!=undefined)
+                      if(search_data[j].items[4].hasOwnProperty('link'))
+                      {
+                        txt+="<div class='card mt-1'><a href='"+search_data[j].items[4].link+"' target='_blank'><img src='"+search_data[j].items[4].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                    }    
+                    if(search_data[j].hasOwnProperty('items') && search_data[j].items[6]!=undefined)
+                      if(search_data[j].items[6].hasOwnProperty('link'))
+                      {
+                        txt+="<div class='card mt-1'><a href='"+search_data[j].items[6].link+"' target='_blank'><img src='"+search_data[j].items[6].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                    }
+               txt+="</div>";
+               //txt+="<div class='row'>";
+               txt+="<div class = 'col-sm-3'>";
+               //txt+="<div class = 'col-sm-3 offset-sm-1'></div>";
+                  
+                if(search_data[j].hasOwnProperty('items') && search_data[j].items[2]!=undefined)
+                  if(search_data[j].items[2].hasOwnProperty('link'))
+                  {
+                    txt+="<div class='card mt-1'><a href='"+search_data[j].items[2].link+"' target='_blank'><img src='"+search_data[j].items[2].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                  }  
+                 if(search_data[j].hasOwnProperty('items') && search_data[j].items[5]!=undefined)
+                  if(search_data[j].items[5].hasOwnProperty('link'))
+                  {
+                    txt+="<div class='card mt-1'><a href='"+search_data[j].items[5].link+"' target='_blank'><img src='"+search_data[j].items[5].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                  }  
+                   if(search_data[j].hasOwnProperty('items') && search_data[j].items[7]!=undefined)
+                  if(search_data[j].items[7].hasOwnProperty('link'))
+                  {
+                    txt+="<div class='card mt-1'><a href='"+search_data[j].items[7].link+"' target='_blank'><img src='"+search_data[j].items[7].link+"' class='card-img-top img-thumbnail'></img></a></div>";
+                  }  
+               
+               txt+="</div></div></div>";
+              }
+            }
+          }
+        }
+      }
+      else{
+            console.log("In else");
+            txt+= "<br><br><br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div>";
+            //document.getElementById('addtable').innerHTML=txt;          
+      }
+
+            txt+="</div><div id='upcoming' class='container tab-pane fade'><br>";
+            console.log(upcoming_data);
+            if(upcoming_data!=undefined){
+              if(upcoming_data.resultsPage.totalEntries!=0)
+            
+            {
+            //var value = 'more';
+            //var value = document.getElementById("toggleButton").value; // here value should be more
+            txt+="<br><div class='row'><div class = 'col-sm-3' padding: 0px;>";
+            txt+="<select id = 'ordering' name='ordering' class='custom-select' onchange = callSort1()>";
+            txt+="<option selected value='default'>Default</option><option value='event'>Event Name</option><option value='time'>Time</option><option value='artist'>Artist</option><option value='type'>Type</option></select></div>";
+            txt+="<div class = 'col-sm-3 ml-0'>";
+            txt+="<select id = 'ascending' name='ascending' class='custom-select' onchange = callSort1() disabled>";
+            txt+="<option selected value='asc'>Ascending</option><option value='des'>Descending</option></select></div></div>";
+
+            txt+="<div id='container'><br>";
+            //console.log(upcoming_data);
+            
+              for(var i =0; i<5; i++)
+              {
+                if(upcoming_data.resultsPage.results.event[i] != undefined){
+                txt+="<div class='card mt-2'>";
+                txt+="<div class='card-body'>";
+                
+                if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('uri') && upcoming_data.resultsPage.results.event[i].uri != undefined)
+                  txt+="<a href='"+upcoming_data.resultsPage.results.event[i].uri+"' class='card-link' target='_blank'>"+upcoming_data.resultsPage.results.event[i].displayName+"</a>";
+                if(upcoming_data.resultsPage.results.event[i].hasOwnProperty('performance') && upcoming_data.resultsPage.results.event[i].performance[0] != undefined)
+                  if(upcoming_data.resultsPage.results.event[i].performance[0].hasOwnProperty('artist') && upcoming_data.resultsPage.results.event[i].performance[0].artist != undefined)
+                    if(upcoming_data.resultsPage.results.event[i].performance[0].artist.hasOwnProperty('displayName') && upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName != undefined)
+                    {
+                      txt+="<p style='margin:0px; padding: 0px;'><span style='color: #FD7E14;'>Artist: "+upcoming_data.resultsPage.results.event[i].performance[0].artist.displayName;
+
+                      txt+=" "+"</span><span style='color: #bdbdbd;'>"+moment(upcoming_data.resultsPage.results.event[i].start.date).format("MMM DD, YYYY")+" ";
+                    }
+                    else{
+                      txt+="<p style='margin:0px; padding: 0px;'>";
+
+                      txt+="  "+"</span><span style='color: #bdbdbd;'>"+moment(upcoming_data.resultsPage.results.event[i].start.date).format("MMM DD, YYYY")+" ";
+                    }
+                
+                if(upcoming_data.resultsPage.results.event[i].start.hasOwnProperty('time') && upcoming_data.resultsPage.results.event[i].start.time!= null)
+                  txt+=upcoming_data.resultsPage.results.event[i].start.time+"</span></p>";
+                else
+                  txt+="</span></p>";
+                txt+="<p style='margin:0px; padding: 0px;'>Type: "+upcoming_data.resultsPage.results.event[i].type+"</p>";
+                txt+="</div></div>";
+            }}
+              txt+="<div class = 'container col-10 text-center'><button id='toggleButton' type='button' value = 'more' class='btn btn-primary mt-5' style = 'vertical-align: middle;' onclick=toggleText('more') ng-click = 'showCard=true'>Show more</button></div>";
+              txt+="</div></div></div>";
+          }}
+          else{
+            console.log("In alert else loop");
+            txt += "<br><br><div class='alert alert-warning mt-5' role='alert'>No records.</div></div>";
+            //document.getElementById('addtable').innerHTML=txt_error;
+          }
+            //txt+="</div></div>"; //Closing divs for tab content
+            //document.getElementById("addtable").innerHTML = txt;
+
+           /* $('#addtable').html("");
+            $('#addtable').append(txt);*/
+            var $newDiv1 = $(txt);
+            $('#addtable').html("");
+            $('#addtable').append($newDiv1);
+
+                  angular.element(document).injector().invoke(function ($compile, $rootScope) {
+                  $rootScope.$apply(function() {
+                      var scope = angular.element($newDiv1).scope();
+                      $compile($newDiv1)(scope);
+                  });
+              });
+            
+            if(artistDetails_array!=undefined)
+            for(var k =0; k<artistDetails_array.length;k++)
+            {
+            var $newDiv = $('<div class="progress-wrapper1 mx-0 my-0"><div ng-controller="myCtrl1" class="progress1" style="top: 50%; bottom: auto; left: 50%; transform: translateY(-50%) translateX(-50%);">'+artistDetails_array[k].artists.items[0].popularity+'</div><div class="round-progress-wrapper" round-progress max="100" current= "'+artistDetails_array[k].artists.items[0].popularity+'" color="#2eb82e" radius="10" stroke="1" rounded="false" clockwise="false" responsive="true" duration="0"></div></div>');
+                  $('#popular'+k).append($newDiv);
+
+                  angular.element(document).injector().invoke(function ($compile, $rootScope) {
+                  $rootScope.$apply(function() {
+                      var scope = angular.element($newDiv).scope();
+                      $compile($newDiv)(scope);
+                  });
+              });
+            }
+            
+            //changeStar(eventdetails_array.id);
+            
+            var lat = parseFloat(venueDetails_array._embedded.venues[0].location.latitude);
+            var lng = parseFloat(venueDetails_array._embedded.venues[0].location.longitude);
+            var venue = {lat: lat, lng: lng}
+            //var uluru = {lat: -25.344, lng: 131.036};
+            var map = new google.maps.Map(
+            document.getElementById('map'), {zoom: 13, center: venue});
+            var marker = new google.maps.Marker({position: venue, map: map});        
+        }
+       
+function initMap(){
+}
+
+
+</script>
+</head>
+<body>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBYJYNAGMF5MEC-7txG2Hb3xpJBdSsWu6o&callback=initMap">
+    </script>
+<div class = 'container col-sm-10'> 
+<div class="container mt-5 bg-light border rounded" >
+   <h5 class='mt-3 mb-3' align = center>Entertainment Event Ticket Search</h5>
+  <form id = 'myform' onsubmit="event.preventDefault(); submitData();">
+   
+    <div class="form-group required row">
+        <div class = "col-sm-2 offset-sm-2 control-label">
+            <label for="keyword">Keyword</label>
+        </div>
+        
+        <div class = "col-sm-6">
+         <input type="text" class="form-control" id="keyword" name="keyword" placeholder="Enter Artist, Team or Event Name (eg. Lakers)" name="keyword" value="">
+        </div>
+         
+  </div>
+      
+    <div class="form-group row">
+         <div class = "col-sm-2 offset-sm-2">
+            <label for="Category">Category</label>
+        </div>
+        <div class = "col-sm-2">
+            <select id = "category" name="category" class="custom-select">
+                <option selected value="">All</option>
+                <option value="KZFzniwnSyZfZ7v7nJ">Music</option>
+                <option value="KZFzniwnSyZfZ7v7nE">Sports</option>
+                <option value="KZFzniwnSyZfZ7v7na">Arts & Theatre</option>
+                <option value="KZFzniwnSyZfZ7v7nn">Film</option>
+                <option value="KZFzniwnSyZfZ7v7n1">Miscellaneous</option>
+            </select>
+        </div>
+      </div>
+     
+    
+     <div class="form-group row">
+      <div class = "col-sm-2 offset-sm-2">
+          <label for="distance">Distance</label>
+      </div>
+      <div class = "col-sm-2"> 
+            <input type="number" class="form-control" id="radius" placeholder="10" name="number">
+       </div>
+        <div class = "col-sm-2"> 
+           <select id = "unit" name="distance" class="custom-select">
+                <option selected value ="miles">Miles</option>
+                <option value="km">Kilometers</option>
+            </select>
+       </div>
+     </div>
+   
+      <div class=" form-group required row">
+          <label class = "col-sm-2 offset-sm-2 control-label" for="from">From</label>
+          <div class="col-sm-6">
+          <div class = "custom-control custom-radio"> 
+            <input type="radio" class="custom-control-input radio-class" id="current" name="location" checked onClick = "custom_location.disabled = true">
+            <label class="custom-control-label" for="current">Current location</label><br>
+          </div>
+          <div class = " custom-control custom-radio">
+            <input type="radio" class="custom-control-input radio-class" id="other" name="location" onClick = "custom_location.disabled=false">
+            <label class="custom-control-label" for="other">Other, Please specify:</label>
+            <input type="text" class="form-control" id="custom_location" name="custom_location" disabled>
+          </div>
+      </div>    
+    </div>
+    
+    <div class = "form-group row">
+        <div class = "col-sm-8 offset-sm-2">  
+            <button type="submit" class="btn btn-primary" id ="search" disabled=""><i class="material-icons" style = "vertical-align:middle;">search</i>Search</button>
+            <button type="button" class="btn btn-light border" id = "clear" onclick="reset_form()"><i class="material-icons" style = "vertical-align:middle;">clear_all</i>Clear</button>
+        </div>
+      </div>
+  </form>
+</div>
+
+<div class='container'>
+  <ul class="nav nav-pills mt-4 justify-content-center" role= 'tablist'>
+    <li class="nav-item">
+      <a id = 'resPill' class="nav-link active" data-toggle="pill" href="#result">Results</a>
+    </li>
+    <li class="nav-item">
+      <a id='favPill' class="nav-link" data-toggle="pill" href="#favourites" >Favourites</a>
+    </li>
+  </ul>
+</div>
+
+  <div id="addtable" class="mt-3 "></div>
+  <div class="container" id="animateProgressBar" style="display: none;">
+        <div class="progress" style="margin-top: 90px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+            </div>
+        </div>
+    </div>
+
+<div class="modal" id="myModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">View Seat Map</h4>
+          </h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body">
+        <div id='staticUrlImage'></div>
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div id="spotify"></div>
+</div>             
+</body>
+</html>
