@@ -111,7 +111,7 @@ body {
     width: 26%;
     height: 430px;
     text-align: center;
-    background-image: url(grid.png);
+    background-image: url(images/grid.png);
     background-size: 400px;
 }
 
@@ -122,7 +122,7 @@ body {
     width: 26%;
     height: 430px;
     text-align: center;
-    background-image: url(grid.png);
+    background-image: url(images/grid.png);
     background-size: 400px;
 }
 
@@ -197,7 +197,7 @@ header { margin: 45px;
     height: auto;
 }
 #lawyer{
-            background-image: url(lawyer.jpg);
+            background-image: url(images/lawyer.jpg);
             background-repeat: no-repeat;
             height: 680px;
             width: 100%;
@@ -231,7 +231,7 @@ header { margin: 45px;
 }
 
 .parallax-glasses {
-    background-image: url(glasses.png);
+    background-image: url(images/glasses.png);
     background-attachment: fixed;
     background-repeat: no-repeat;
     background-size: 1640px 700px;
@@ -336,7 +336,7 @@ header { margin: 45px;
 }
 
 #try-for-free-tab {
-   background-image: url(notebook.jpg);
+   background-image: url(images/notebook.jpg);
             height: 400px;
             width: 100%;
             background-size: 1000px;
